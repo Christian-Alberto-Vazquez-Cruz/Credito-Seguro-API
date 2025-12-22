@@ -1,0 +1,160 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "sqlserver"
+  url      = env("DATABASE_URL")
+}
+
+model ConsentimientoConsulta {
+  id                                                           Int                   @id(map: "PK__Consenti__3213E83FD4830C87") @default(autoincrement())
+  idEntidadTitular                                             Int
+  idEntidadConsultante                                         Int
+  tipoInformacion                                              String                @db.NVarChar(50)
+  fechaConsentimiento                                          DateTime?             @default(now(), map: "DF__Consentim__fecha__6B24EA82")
+  fechaInicio                                                  DateTime
+  fechaVencimiento                                             DateTime
+  estadoConsentimiento                                         String?               @default("ACTIVO", map: "DF__Consentim__estad__6C190EBB") @db.NVarChar(20)
+  revocado                                                     Boolean?              @default(false, map: "DF__Consentim__revoc__6D0D32F4")
+  fechaRevocacion                                              DateTime?
+  ipOrigen                                                     String?               @db.NVarChar(45)
+  numeroConsultasRealizadas                                    Int?                  @default(0, map: "DF__Consentim__numer__6E01572D")
+  fechaUltimaConsulta                                          DateTime?
+  Entidad_ConsentimientoConsulta_idEntidadTitularToEntidad     Entidad               @relation("ConsentimientoConsulta_idEntidadTitularToEntidad", fields: [idEntidadTitular], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "FK_ConsentimientoConsulta_Usuario")
+  Entidad_ConsentimientoConsulta_idEntidadConsultanteToEntidad Entidad               @relation("ConsentimientoConsulta_idEntidadConsultanteToEntidad", fields: [idEntidadConsultante], references: [id], onUpdate: NoAction, map: "FK_ConsentimientoConsulta_UsuarioEntidad")
+  LogConsultaTerceros                                          LogConsultaTerceros[]
+}
+
+model ConsentimientoEntidad {
+  id                     Int       @id(map: "PK__Consenti__3213E83FC6ECA1A5") @default(autoincrement())
+  idEntidad              Int
+  finalidad              String    @db.NVarChar(200)
+  fechaConsentimiento    DateTime
+  vigenciaConsentimiento DateTime
+  revocado               Boolean?  @default(false, map: "DF__Consentim__revoc__6754599E")
+  fechaRevocacion        DateTime?
+  Entidad                Entidad   @relation(fields: [idEntidad], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Consentimiento_Entidad")
+}
+
+model ConsumoEntidad {
+  idEntidad           Int
+  periodoInicio       DateTime @db.Date
+  consultasRealizadas Int      @default(0, map: "DF__ConsumoEn__consu__46E78A0C")
+  ultimaActualizacion DateTime @default(now(), map: "DF__ConsumoEn__ultim__47DBAE45")
+  Entidad             Entidad  @relation(fields: [idEntidad], references: [id], onUpdate: NoAction, map: "FK_ConsumoEntidad_Entidad")
+
+  @@id([idEntidad, periodoInicio], map: "PK_ConsumoEntidad")
+}
+
+model Entidad {
+  id                                                                          Int                      @id(map: "PK__Entidad__3213E83FE6801F97") @default(autoincrement())
+  idPlan                                                                      Int
+  tipoEntidad                                                                 String                   @db.NVarChar(10)
+  nombreLegal                                                                 String                   @db.NVarChar(200)
+  rfc                                                                         String                   @unique(map: "UQ__Entidad__C2B03494391D38D9") @db.NVarChar(13)
+  fechaAlta                                                                   DateTime?                @default(now(), map: "DF__Entidad__fechaAl__403A8C7D")
+  activo                                                                      Boolean?                 @default(true, map: "DF__Entidad__activo__412EB0B6")
+  ConsentimientoConsulta_ConsentimientoConsulta_idEntidadTitularToEntidad     ConsentimientoConsulta[] @relation("ConsentimientoConsulta_idEntidadTitularToEntidad")
+  ConsentimientoConsulta_ConsentimientoConsulta_idEntidadConsultanteToEntidad ConsentimientoConsulta[] @relation("ConsentimientoConsulta_idEntidadConsultanteToEntidad")
+  ConsentimientoEntidad                                                       ConsentimientoEntidad[]
+  ConsumoEntidad                                                              ConsumoEntidad[]
+  PlanSuscripcion                                                             PlanSuscripcion          @relation(fields: [idPlan], references: [id], onUpdate: NoAction, map: "FK_Entidad_IdPlan")
+  HistorialScore                                                              HistorialScore[]
+  LogConsultaTerceros                                                         LogConsultaTerceros[]
+  Usuario                                                                     Usuario[]
+}
+
+model HistorialScore {
+  id                Int       @id(map: "PK__Historia__3213E83F93A87F00") @default(autoincrement())
+  idEntidad         Int
+  puntajeScore      Int
+  nivelRiesgo       String    @db.NVarChar(20)
+  factoresPositivos String?   @db.NVarChar(Max)
+  factoresNegativos String?   @db.NVarChar(Max)
+  fechaCalculo      DateTime? @default(now(), map: "DF__Historial__fecha__534D60F1")
+  Entidad           Entidad   @relation(fields: [idEntidad], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "FK_HistorialScore_Entidad")
+}
+
+model LogConsultaTerceros {
+  id                     Int                    @id(map: "PK__LogConsu__3213E83F8B4ABF0D") @default(autoincrement())
+  idConsentimiento       Int
+  idEntidadTitular       Int
+  idEntidadConsultante   Int
+  idUsuarioOperador      Int
+  entidadConsultante     String                 @db.NVarChar(200)
+  tipoConsulta           String                 @db.NVarChar(50)
+  fechaConsulta          DateTime?              @default(now(), map: "DF__LogConsul__fecha__75A278F5")
+  resultadoConsulta      String                 @db.NVarChar(30)
+  ipOrigen               String?                @db.NVarChar(45)
+  ConsentimientoConsulta ConsentimientoConsulta @relation(fields: [idConsentimiento], references: [id], onUpdate: NoAction, map: "FK_LogConsulta_Consentimiento")
+  Entidad                Entidad                @relation(fields: [idEntidadTitular], references: [id], onUpdate: NoAction, map: "FK_LogConsulta_Usuario")
+  Usuario                Usuario                @relation(fields: [idUsuarioOperador], references: [id], onUpdate: NoAction, map: "FK_LogConsulta_UsuarioOperador")
+}
+
+model Notificacion {
+  id               Int       @id(map: "PK__Notifica__3213E83FAF3D6CFF") @default(autoincrement())
+  tipoNotificacion String    @db.NVarChar(50)
+  idUsuario        Int
+  titulo           String    @db.NVarChar(200)
+  mensaje          String    @db.NVarChar(Max)
+  hora             DateTime? @default(now(), map: "DF__Notificaci__hora__619B8048")
+  visto            Boolean?  @default(false, map: "DF__Notificac__visto__628FA481")
+  Usuario          Usuario   @relation(fields: [idUsuario], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Notificacion_Usuario")
+}
+
+model PlanSuscripcion {
+  id                    Int       @id(map: "PK__PlanSusc__3213E83F2804A5E9") @default(autoincrement())
+  tipoPlan              String    @unique(map: "UQ__PlanSusc__A7343DAD3D67C48B") @db.NVarChar(30)
+  maxConsultasMensuales Int
+  Entidad               Entidad[]
+}
+
+model Recomendacion {
+  id                Int       @id(map: "PK__Recomend__3213E83FA10E3967") @default(autoincrement())
+  idUsuario         Int
+  tipoRecomendacion String    @db.NVarChar(50)
+  titulo            String    @db.NVarChar(200)
+  descripcion       String    @db.NVarChar(Max)
+  impactoEstimado   String?   @db.NVarChar(20)
+  prioridad         Int?      @default(1, map: "DF__Recomenda__prior__59063A47")
+  estado            String?   @default("PENDIENTE", map: "DF__Recomenda__estad__59FA5E80") @db.NVarChar(30)
+  fechaCreacion     DateTime? @default(now(), map: "DF__Recomenda__fecha__5AEE82B9")
+  Usuario           Usuario   @relation(fields: [idUsuario], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Recomendacion_Usuario")
+}
+
+model RefreshToken {
+  id             Int       @id(map: "PK__RefreshT__3213E83F98106A0A") @default(autoincrement())
+  idUsuario      Int
+  tokenHash      String    @unique(map: "UQ__RefreshT__9015C60EFF792458") @db.NVarChar(64)
+  horaCreacion   DateTime? @default(now(), map: "DF__RefreshTo__horaC__7D439ABD")
+  horaExpiracion DateTime
+  revocado       Boolean?  @default(false, map: "DF__RefreshTo__revoc__7E37BEF6")
+  ipOrigen       String?   @db.NVarChar(45)
+  Usuario        Usuario   @relation(fields: [idUsuario], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "FK_RefreshToken_Usuario")
+}
+
+model Rol {
+  id        Int       @id(map: "PK__Rol__3213E83FF7D0DADF") @default(autoincrement())
+  nombreRol String    @unique(map: "UQ__Rol__2787B00CB8BFD9EE") @db.NVarChar(30)
+  Usuario   Usuario[]
+}
+
+model Usuario {
+  id                    Int                   @id(map: "PK__Usuario__3213E83FFBCAD551") @default(autoincrement())
+  idEntidad             Int
+  idRol                 Int
+  nombre                String                @db.NVarChar(100)
+  correo                String                @unique(map: "UQ__Usuario__2A586E0BB8CB9E0E") @db.NVarChar(255)
+  fechaCreacion         DateTime?             @default(now(), map: "DF__Usuario__fechaCr__4CA06362")
+  activo                Boolean?              @default(true, map: "DF__Usuario__activo__4D94879B")
+  notificacionesActivas Boolean?              @default(true, map: "DF__Usuario__notific__4E88ABD4")
+  contraseniaHash       String                @db.VarChar(255)
+  LogConsultaTerceros   LogConsultaTerceros[]
+  Notificacion          Notificacion[]
+  Recomendacion         Recomendacion[]
+  RefreshToken          RefreshToken[]
+  Entidad               Entidad               @relation(fields: [idEntidad], references: [id], onUpdate: NoAction, map: "FK_Usuario_Entidad")
+  Rol                   Rol                   @relation(fields: [idRol], references: [id], onUpdate: NoAction, map: "FK_Usuario_Rol")
+}

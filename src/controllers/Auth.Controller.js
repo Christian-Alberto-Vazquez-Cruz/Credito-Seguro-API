@@ -3,7 +3,7 @@ import { loginSchema } from '../schemas/Auth.Schema.js'
 import { ENTRADA_INVALIDA, CREDENCIALES_INCORRECTAS, CUENTA_INACTIVA, MENSAJE_ERROR_GENERICO } from '../utilities/Constantes.js'
 import { responderConError, responderConExito, manejarResultado } from '../utilities/Manejadores.js'
 import { compararContraseñaBCrypt, hashearASHA256 } from '../utilities/Hashing.js'
-import { generarJWT, generarRefreshToken } from '../utilities/GeneradorJWT.js'
+import { generarJWT, generarRefreshToken, verificarRefreshToken } from '../utilities/GeneradorJWT.js'
 
 export class AuthController {
     static async login(req, res) {
@@ -110,57 +110,94 @@ export class AuthController {
             const { refreshToken } = req.body
 
             if (!refreshToken) {
-                return responderConError(res, 400, 'Refresh token requerido')
+                return responderConError(res, 400, REFRESH_TOKEN_REQUERIDO)
             }
 
-            // Verificar que el refresh token existe en BD
-            const tokenEnBD = await prisma.refreshToken.findFirst({
-                where: { 
-                    token: refreshToken,
-                    expiraEn: { gt: new Date() }
-                },
+            let decoded
+            try {
+                decoded = await verificarRefreshToken(refreshToken)
+            } catch (error) {
+                console.error('Error verificando refresh token:', error)
+                return responderConError(res, 401, REFRESH_TOKEN_INVALIDO)
+            }
+
+            const tokenHash = hashearASHA256(refreshToken)
+
+            const tokenEnBD = await prisma.refreshToken.findUnique({
+                where: { tokenHash: tokenHash },
                 include: {
-                    usuario: {
+                    Usuario: {
                         include: {
-                            entidad: {
-                                include: { plan: true }
+                            Entidad: {
+                                include: {
+                                    PlanSuscripcion: true
+                                }
                             },
-                            rol: true
+                            Rol: true
                         }
                     }
                 }
             })
 
             if (!tokenEnBD) {
-                return responderConError(res, 401, 'Refresh token inválido o expirado')
+                return responderConError(res, 401, REFRESH_TOKEN_INVALIDO)
             }
 
-            // Generar nuevo access token
+            if (tokenEnBD.revocado) {
+                return responderConError(res, 401, REFRESH_TOKEN_REVOCADO)
+            }
+
+            if (new Date() > tokenEnBD.horaExpiracion) {
+                await prisma.refreshToken.update({
+                    where: { id: tokenEnBD.id },
+                    data: { revocado: true }
+                })
+                return responderConError(res, 401, REFRESH_TOKEN_EXPIRADO)
+            }
+
+            if (!tokenEnBD.Usuario.activo || !tokenEnBD.Usuario.Entidad.activo) {
+                await prisma.refreshToken.update({
+                    where: { id: tokenEnBD.id },
+                    data: { revocado: true }
+                })
+                return responderConError(res, 403, CUENTA_INACTIVA)
+            }
+
+            if (decoded.idUsuario !== tokenEnBD.Usuario.id) {
+                return responderConError(res, 401, REFRESH_TOKEN_INVALIDO)
+            }
+
             const payloadJWT = AuthController.crearPayload(
-                tokenEnBD.usuario,
-                tokenEnBD.usuario.entidad,
-                tokenEnBD.usuario.entidad.plan,
-                tokenEnBD.usuario.rol
+                tokenEnBD.Usuario,
+                tokenEnBD.Usuario.Entidad,
+                tokenEnBD.Usuario.Entidad.PlanSuscripcion,
+                tokenEnBD.Usuario.Rol
             )
             
             const nuevoToken = await generarJWT(payloadJWT)
 
-            return responderConExito(res, 200, 'Token renovado', {
-                token: nuevoToken
+            return responderConExito(res, 200, 'Token renovado exitosamente', {
+                token: nuevoToken,
+                usuario: {
+                    id: tokenEnBD.Usuario.id,
+                    nombre: tokenEnBD.Usuario.nombre,
+                    correo: tokenEnBD.Usuario.correo,
+                    rol: tokenEnBD.Usuario.Rol.nombreRol
+                }
             })
 
         } catch (error) {
             console.error('Error al renovar token:', error)
-            return responderConError(res, 500, 'Error interno del servidor')
+            return responderConError(res, 500, MENSAJE_ERROR_GENERICO)
         }
     }
+
 
     static async logout(req, res) {
         try {
             const { refreshToken } = req.body
 
             if (refreshToken) {
-                // Eliminar refresh token de la base de datos
                 await prisma.refreshToken.deleteMany({
                     where: { token: refreshToken }
                 })

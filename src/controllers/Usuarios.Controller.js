@@ -3,7 +3,7 @@ import { crearUsuarioSchema } from '../schemas/Usuarios.Schema.js'
 import { ENTRADA_INVALIDA, MENSAJE_ERROR_GENERICO, RFC_YA_REGISTRADO,
    CORREO_YA_REGISTRADO, ENTIDAD_NO_ENCONTRADA, ROL_NO_ENCONTRADO, 
    PLAN_NO_ENCONTRADO
- } from '../utilities/Constantes'
+ } from '../utilities/Constantes.js'
 
 export class UsuariosController {
     static async crearUsuario(req, res) {

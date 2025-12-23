@@ -9,3 +9,5 @@ export const CORREO_YA_REGISTRADO = "El correo ingresado ya se encuentra registr
 export const ENTIDAD_NO_ENCONTRADA = "No se ha encontrado una entidad con los datos proporcionados"
 export const ROL_NO_ENCONTRADO = "No se ha encontrado el rol" 
 export const PLAN_NO_ENCONTRADO = "No se ha encontrado el plan proporcionado"
+export const ENTIDAD_YA_ACTIVA = "La entidad ya se encuentra activa"
+export const ENTIDAD_YA_INACTIVA = "La entidad ya se encuentra inactiva"

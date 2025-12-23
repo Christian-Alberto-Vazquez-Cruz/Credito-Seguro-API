@@ -18,7 +18,7 @@ app.get("/consulta", async (req, res) => {
 
 app.use("/auth", authRouter)
 app.use("/usuarios", usuariosRouter)
-// app.use("/entidades", entidadesRouter)
+app.use("/entidades", entidadesRouter)
 // app.use("/consentimientos-consulta", consentimientosRouter)
 // app.use("/consentimientos-entidad", consentimientoEntidad)
 // app.use("/consultas", consultasRouter)

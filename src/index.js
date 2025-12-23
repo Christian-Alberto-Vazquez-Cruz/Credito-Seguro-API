@@ -4,6 +4,7 @@ import cors from 'cors'
 import {prisma} from './lib/db.js'
 import authRouter from  './routes/Auth.Routes.js'
 import usuariosRouter from './routes/Usuarios.Routes.js'
+import entidadesRouter from "./routes/Entidades.Routes.js"
 
 dotenv.config()
 const app = express()

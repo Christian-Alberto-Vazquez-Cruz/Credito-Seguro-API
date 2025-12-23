@@ -1,0 +1,31 @@
+INSTALACIÓN DE PRISMA
+
+1.- npm init -y
+2.- npm install typescript tsx @types/node --save-dev
+3.- npx tsc --init
+4.- npm install -D prisma@6.19.0
+5.- npx prisma init --datasource-provider sqlserver --output ../generated/prisma (o npx prisma init)
+6-  npx prisma generate
+
+7.- npm install @prisma/client@6.19.0 && npm install @prisma/adapter-mssql && npm install dotenv
+
+
+-----------------
+Una vez realizados los pasos anteriores colocar la cadena de conexión en .env
+
+EN PRISMA SCHEMA
+1.- Cambiar datasource db {provider: "PostgreSQL"} a (provider: "sqlserver")
+2.- Agregar en generator client {provider ... output ... previewFeatures = ["Views"]} (colocar previewFeatures) 
+
+1.- Cambiar en Package.json "type" de "commonjs" a "module" 
+1.- DATABASE_URL="sqlserver://localhost:50355;database=CirculoCredito;integratedSecurity=true;trustServerCertificate=true;"
+
+2.- npx prisma db pull (√ Introspected 7 models and wrote them into prisma\schema.prisma in 869ms)
+
+3.- npx prisma generate (Genera el cliente para comunicarse entre ORM y BD)
+
+DATABASE_URL
+sqlserver://localhost:50355;database=CirculoCredito;integratedSecurity=true;trustServerCertificate=true;
+
+
+

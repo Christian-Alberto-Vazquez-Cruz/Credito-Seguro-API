@@ -77,7 +77,7 @@ export class AuthController {
                     entidad: {
                         id: usuario.Entidad.id,
                         nombreLegal: usuario.Entidad.nombreLegal,
-                        tipoEntidad: entidad.tipoEntidad
+                        tipoEntidad: usuario.Entidad.tipoEntidad
                     }
                 }
             })

@@ -9,6 +9,11 @@ export function hashearASHA256(entrada){
     return entradaHasheada
 }
 
+export async function hashearContraseñaBCrypt(contraseña) {
+    const saltRounds = 10
+    return await bcrypt.hash(contraseña, saltRounds)
+}
+
 export async function compararContraseñaBCrypt(passwordPlana, hashAlmacenado){
     const esValida = await bcrypt.compare(
         passwordPlana,

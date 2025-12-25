@@ -5,18 +5,7 @@ export const crearConsentimientoSchema = z.object({
     idEntidadConsultante: z.number()
         .int("La entidad consultante debe ser un número entero")
         .positive("La entidad consultante debe ser un número positivo"),
-    
-    tipoInformacion: z.enum([
-        'SCORE_COMPLETO',
-        'SCORE_BASICO',
-        'HISTORIAL_RESUMIDO',
-        'HISTORIAL_COMPLETO'
-    ], {
-        errorMap: () => ({ 
-            message: "El tipo de información debe ser SCORE_COMPLETO, SCORE_BASICO, HISTORIAL_RESUMIDO o HISTORIAL_COMPLETO" 
-        })
-    }),
-    
+        
     fechaVencimiento: z.iso.datetime("La fecha de vencimiento debe ser una fecha válida en formato ISO")
         .transform(str => new Date(str))
 })

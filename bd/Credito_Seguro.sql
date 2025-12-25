@@ -157,9 +157,8 @@ GO
 CREATE TABLE ConsentimientoEntidad (
     id INT IDENTITY(1,1) PRIMARY KEY,
     idEntidad INT NOT NULL,
-    finalidad NVARCHAR(200) NOT NULL, 
-    fechaConsentimiento DATETIME2 NOT NULL,
-    vigenciaConsentimiento DATETIME2 NOT NULL,
+    fechaInicio DATETIME2 NOT NULL,
+    fechaVencimiento DATETIME2 NOT NULL,
     revocado BIT DEFAULT 0,
     fechaRevocacion DATETIME2,
     

@@ -26,14 +26,13 @@ model ConsentimientoConsulta {
 }
 
 model ConsentimientoEntidad {
-  id                     Int       @id(map: "PK__Consenti__3213E83FC6ECA1A5") @default(autoincrement())
-  idEntidad              Int
-  finalidad              String    @db.NVarChar(200)
-  fechaConsentimiento    DateTime
-  vigenciaConsentimiento DateTime
-  revocado               Boolean?  @default(false, map: "DF__Consentim__revoc__6754599E")
-  fechaRevocacion        DateTime?
-  Entidad                Entidad   @relation(fields: [idEntidad], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Consentimiento_Entidad")
+  id               Int       @id(map: "PK__Consenti__3213E83FC6ECA1A5") @default(autoincrement())
+  idEntidad        Int
+  fechaInicio      DateTime
+  fechaVencimiento DateTime
+  revocado         Boolean?  @default(false, map: "DF__Consentim__revoc__6754599E")
+  fechaRevocacion  DateTime?
+  Entidad          Entidad   @relation(fields: [idEntidad], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Consentimiento_Entidad")
 }
 
 model ConsumoEntidad {

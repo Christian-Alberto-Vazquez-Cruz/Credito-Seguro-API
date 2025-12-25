@@ -173,11 +173,9 @@ CREATE TABLE ConsentimientoConsulta (
     idEntidadTitular INT NOT NULL,
     idEntidadConsultante INT NOT NULL,
     
-    tipoInformacion NVARCHAR(50) NOT NULL, -- 'SCORE_COMPLETO', 'SCORE_BASICO', 'HISTORIAL'
     fechaConsentimiento DATETIME2 DEFAULT GETDATE(),
     fechaInicio DATETIME2 NOT NULL,
     fechaVencimiento DATETIME2 NOT NULL,
-    estadoConsentimiento NVARCHAR(20) DEFAULT 'ACTIVO',
     revocado BIT DEFAULT 0,
     fechaRevocacion DATETIME2,    
     ipOrigen NVARCHAR(45),
@@ -196,13 +194,6 @@ CREATE TABLE ConsentimientoConsulta (
     CONSTRAINT CHK_ConsentimientoConsulta_Estado 
         CHECK (estadoConsentimiento IN ('ACTIVO', 'EXPIRADO', 'REVOCADO', 'PAUSADO')),
         
-    CONSTRAINT CHK_ConsentimientoConsulta_Tipo
-        CHECK (tipoInformacion IN (
-            'SCORE_COMPLETO',      -- Score + factores + recomendaciones
-            'SCORE_BASICO',        -- Solo puntaje y nivel de riesgo
-            'HISTORIAL_RESUMIDO',  -- Resumen crediticio
-            'HISTORIAL_COMPLETO'   -- Todo el detalle
-        ))
 );
 GO
 

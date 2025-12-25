@@ -12,11 +12,9 @@ model ConsentimientoConsulta {
   id                                                           Int                   @id(map: "PK__Consenti__3213E83FD4830C87") @default(autoincrement())
   idEntidadTitular                                             Int
   idEntidadConsultante                                         Int
-  tipoInformacion                                              String                @db.NVarChar(50)
   fechaConsentimiento                                          DateTime?             @default(now(), map: "DF__Consentim__fecha__6B24EA82")
   fechaInicio                                                  DateTime
   fechaVencimiento                                             DateTime
-  estadoConsentimiento                                         String?               @default("ACTIVO", map: "DF__Consentim__estad__6C190EBB") @db.NVarChar(20)
   revocado                                                     Boolean?              @default(false, map: "DF__Consentim__revoc__6D0D32F4")
   fechaRevocacion                                              DateTime?
   ipOrigen                                                     String?               @db.NVarChar(45)

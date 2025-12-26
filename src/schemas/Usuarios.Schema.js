@@ -1,12 +1,6 @@
 import { z } from '../lib/zod.js'
-
-const rfcFisica = z.string()
-    .length(13, "El RFC de persona física debe tener 13 caracteres")
-    .regex(/^[A-ZÑ&]{4}\d{6}[A-Z0-9]{3}$/, "Formato de RFC inválido para persona física")
-
-const rfcMoral = z.string()
-    .length(12, "El RFC de persona moral debe tener 12 caracteres")
-    .regex(/^[A-ZÑ&]{3}\d{6}[A-Z0-9]{3}$/, "Formato de RFC inválido para persona moral")
+import { validarRFC, addIssue } from '../utilities/SchemaFunctions.js'
+import { idNumberSchema, rfcFisicaSchema } from './Primitivas.Schema.js'
 
 export const crearUsuarioSchema = z.object({
     nombre: z.string()
@@ -52,59 +46,26 @@ export const crearUsuarioSchema = z.object({
     // Si es persona física, debe crear nueva entidad
     if (data.tipoEntidad === 'FISICA') {
         if (!data.nombreLegal) {
-            ctx.addIssue({
-                code: "custom",
-                message: "El nombre legal es requerido para persona física",
-                path: ['nombreLegal']
-            })
+            addIssue(ctx, 'nombreLegal', 'El nombre legal es requerido para persona física')
         }
         if (!data.rfc) {
-            ctx.addIssue({
-                code: "custom",
-                message: "El RFC es requerido para persona física",
-                path: ['rfc']
-            })
+            addIssue(ctx, 'rfc', 'El RFC es requerido para persona física')
         } else {
-            const resultRFC = rfcFisica.safeParse(data.rfc)
-            if (!resultRFC.success) {
-                ctx.addIssue({
-                    code: "custom",
-                    message: resultRFC.error.errors[0].message,
-                    path: ['rfc']
-                })
-            }
-        }
-        if (!data.idPlan) {
-            ctx.addIssue({
-                code: "custom",
-                message: "El plan es requerido para persona física",
-                path: ['idPlan']
-            })
+            validarRFC(rfcFisicaSchema, data.rfc, ctx)
         }
         if (data.idEntidad) {
-            ctx.addIssue({
-                code: "custom",
-                message: "No debe especificar idEntidad para persona física",
-                path: ['idEntidad']
-            })
+           addIssue(ctx, 'idEntidad', 'No debe especificar idEntidad para persona física')
         }
     }
     
     // Si es persona moral, debe usar entidad existente
     if (data.tipoEntidad === 'MORAL') {
         if (!data.idEntidad) {
-            ctx.addIssue({
-                code: "custom",
-                message: "El idEntidad es requerido para persona moral",
-                path: ['idEntidad']
-            })
+            addIssue(ctx, 'idEntidad', "El idEntidad es requerido para persona moral")
         }
         if (data.nombreLegal || data.rfc || data.idPlan) {
-            ctx.addIssue({
-                code: "custom",
-                message: "No debe especificar nombreLegal, rfc o idPlan para persona moral",
-                path: ['tipoEntidad']
-            })
+            addIssue(ctx, 'tipoEntidad', 'No debe especificar nombreLegal, rfc o idPlan para persona moral')
+
         }
     }
 })
@@ -146,7 +107,5 @@ export const configurarNotificacionesSchema = z.object({
 })
 
 export const eliminarUsuarioSchema = z.object({
-    id: z.number()
-        .int("El ID debe ser un número entero")
-        .positive("El ID debe ser un número positivo")
+    id: idNumberSchema
 })

@@ -1,5 +1,5 @@
 import {Router} from 'express'
-import { ConsentimientosController } from '../controllers/ConsentimientosEntidad.Controller.js'
+import { ConsentimientosController } from '../controllers/Consentimientos.Controller.js'
 const router = Router()
 
 

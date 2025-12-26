@@ -1,12 +1,6 @@
 import { z } from '../lib/zod.js'
-
-const rfcFisica = z.string()
-    .length(13, "El RFC de persona física debe tener 13 caracteres")
-    .regex(/^[A-ZÑ&]{4}\d{6}[A-Z0-9]{3}$/, "Formato de RFC inválido para persona física")
-
-const rfcMoral = z.string()
-    .length(12, "El RFC de persona moral debe tener 12 caracteres")
-    .regex(/^[A-ZÑ&]{3}\d{6}[A-Z0-9]{3}$/, "Formato de RFC inválido para persona moral")
+import { idNumberSchema, idParamSchema, 
+    rfcFisicaSchema, rfcMoralSchema} from './Primitivas.Schema.js'
 
 export const crearEntidadSchema = z.object({
     tipoEntidad: z.enum(['FISICA', 'MORAL'], {
@@ -23,35 +17,16 @@ export const crearEntidadSchema = z.object({
         .toUpperCase()
 }).superRefine((data, ctx) => {
     if (data.tipoEntidad === 'FISICA') {
-        const resultRFC = rfcFisica.safeParse(data.rfc)
-        if (!resultRFC.success) {
-            ctx.addIssue({
-                code: z.ZodIssueCode.custom,
-                message: resultRFC.error.errors[0].message,
-                path: ['rfc']
-            })
-        }
+        validarRFC(rfcFisicaSchema, data.rfc, ctx)
     } else if (data.tipoEntidad === 'MORAL') {
-        const resultRFC = rfcMoral.safeParse(data.rfc)
-        if (!resultRFC.success) {
-            ctx.addIssue({
-                code: z.ZodIssueCode.custom,
-                message: resultRFC.error.errors[0].message,
-                path: ['rfc']
-            })
-        }
+        validarRFC(rfcMoralSchema, data.rfc, ctx)
     }
 })
 
 export const consultarEntidadSchema = z.object({
-    id: z.string()
-        .regex(/^\d+$/, "El ID debe ser un número")
-        .transform(val => parseInt(val))
-        .refine(val => val > 0, "El ID debe ser positivo")
+    id: idParamSchema
 })
 
 export const gestionarEstadoEntidadSchema = z.object({
-    id: z.number()
-        .int("El ID debe ser un número entero")
-        .positive("El ID debe ser un número positivo")
+    id: idNumberSchema
 })

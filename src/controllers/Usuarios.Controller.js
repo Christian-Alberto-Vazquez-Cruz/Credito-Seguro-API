@@ -167,15 +167,20 @@ export class UsuariosController {
         }
     }
 
+    /**
+     * Actualiza un usuario
+     * PUT /api/usuarios/:id
+     * Requiere: Autenticación + ser propietario o admin (validado por middleware)
+     */
     static async actualizarUsuario(req, res) {
-        try {
-            const { id } = req.params
-            const idUsuario = parseInt(id)
-                        
+        try {                        
             const resultadoValidacionParam = idParamSchema.safeParse(req.params)
             if (!resultadoValidacionParam) {
                 return manejarErrorZod(res, resultadoValidacionParam)
             }
+
+            const { id: idUsuario } = resultadoValidacionParam.data
+
             
             const resultadoValidacion = actualizarUsuarioSchema.safeParse(req.body)
             if (!resultadoValidacion.success) {
@@ -243,15 +248,21 @@ export class UsuariosController {
         }
     }
 
+    /**
+     * Desactiva un usuario
+     * DELETE /api/usuarios
+     * Requiere: Autenticación + ser propietario o admin (validado por middleware)
+     * Body: { id }
+     */
     static async eliminarUsuario(req, res) {
         try {
-            const { id } = req.body
-            const idUsuario = parseInt(id)
-            
-            if (isNaN(idUsuario) || !idUsuario) {
-                return responderConError(res, 400, 'ID de usuario inválido')
+            const resultadoValidacionParam = idParamSchema.safeParse(req.params)
+            if (!resultadoValidacionParam.success) {
+                return manejarErrorZod(res, resultadoValidacionParam)
             }
-            
+
+            const { id: idUsuario } = resultadoValidacionParam.data
+
             const usuarioExistente = await prisma.usuario.findUnique({
                 where: { id: idUsuario }
             })
@@ -275,17 +286,21 @@ export class UsuariosController {
         }
     }
 
+    /**
+     * Configura las notificaciones de un usuario
+     * PATCH /api/usuarios/:id/notificaciones
+     * Requiere: Autenticación + ser propietario o admin (validado por middleware)
+     */
     static async configurarNotificaciones(req, res) {
         try {
-            const { id } = req.params
-            const idUsuario = parseInt(id)
-            
-            if (isNaN(idUsuario)) {
-                return responderConError(res, 400, 'ID de usuario inválido')
+            const resultadoValidacionParam = idParamSchema.safeParse(req.params)
+            if (!resultadoValidacionParam.success) {
+                return manejarErrorZod(res, resultadoValidacionParam)
             }
+
+            const { id: idUsuario } = resultadoValidacionParam.data
             
             const resultadoValidacion = configurarNotificacionesSchema.safeParse(req.body)
-            
             if (!resultadoValidacion.success) {
                 manejarErrorZod(res, resultadoValidacion)
             }

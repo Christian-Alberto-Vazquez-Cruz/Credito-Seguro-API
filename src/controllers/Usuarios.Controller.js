@@ -1,9 +1,13 @@
 import {prisma} from '../lib/db.js'
-import { crearUsuarioSchema } from '../schemas/Usuarios.Schema.js'
+import { idParamSchema } from '../schemas/Primitivas.Schema.js'
+import { actualizarUsuarioSchema, crearUsuarioSchema } from '../schemas/Usuarios.Schema.js'
 import { ENTRADA_INVALIDA, MENSAJE_ERROR_GENERICO, RFC_YA_REGISTRADO,
    CORREO_YA_REGISTRADO, ENTIDAD_NO_ENCONTRADA, ROL_NO_ENCONTRADO, 
    PLAN_NO_ENCONTRADO
  } from '../utilities/Constantes.js'
+import { USUARIO_NO_ENCONTRADO } from '../utilities/constants/Usuarios.js'
+
+ import { responderConError, responderConExito, manejarErrorZod } from '../utilities/Manejadores.js'
 
 export class UsuariosController {
     static async crearUsuario(req, res) {
@@ -14,22 +18,19 @@ export class UsuariosController {
             ])
 
             if (!rolUsuario) {
-            return responderConError(res, 500, 'Rol USUARIO no configurado')
+                console.log("Rol USUARIO no configurado")
+                return responderConError(res, 500, MENSAJE_ERROR_GENERICO)
             }
 
             if (!planRegular) {
-            return responderConError(res, 500, 'Plan REGULAR no configurado')
+                console.log("Plan REGULAR no configurado")
+                return responderConError(res, 500, MENSAJE_ERROR_GENERICO)
             }
 
             const resultadoValidacion = crearUsuarioSchema.safeParse(req.body)
             
             if (!resultadoValidacion.success) {
-                return responderConError(res, 400, ENTRADA_INVALIDA, {
-                    errores: resultadoValidacion.error.errors.map(err => ({
-                        campo: err.path.join('.'),
-                        mensaje: err.message
-                    }))
-                })
+                return manejarErrorZod(res, resultadoValidacion)
             }
             
             const datos = resultadoValidacion.data
@@ -170,20 +171,15 @@ export class UsuariosController {
         try {
             const { id } = req.params
             const idUsuario = parseInt(id)
-            
-            if (isNaN(idUsuario)) {
-                return responderConError(res, 400, 'ID de usuario inválido')
+                        
+            const resultadoValidacionParam = idParamSchema.safeParse(req.params)
+            if (!resultadoValidacionParam) {
+                return manejarErrorZod(res, resultadoValidacionParam)
             }
             
             const resultadoValidacion = actualizarUsuarioSchema.safeParse(req.body)
-            
             if (!resultadoValidacion.success) {
-                return responderConError(res, 400, ENTRADA_INVALIDA, {
-                    errores: resultadoValidacion.error.errors.map(err => ({
-                        campo: err.path.join('.'),
-                        mensaje: err.message
-                    }))
-                })
+                return manejarErrorZod(res, resultadoValidacion)
             }
             
             const datos = resultadoValidacion.data
@@ -247,7 +243,7 @@ export class UsuariosController {
         }
     }
 
-static async eliminarUsuario(req, res) {
+    static async eliminarUsuario(req, res) {
         try {
             const { id } = req.body
             const idUsuario = parseInt(id)
@@ -291,12 +287,7 @@ static async eliminarUsuario(req, res) {
             const resultadoValidacion = configurarNotificacionesSchema.safeParse(req.body)
             
             if (!resultadoValidacion.success) {
-                return responderConError(res, 400, ENTRADA_INVALIDA, {
-                    errores: resultadoValidacion.error.errors.map(err => ({
-                        campo: err.path.join('.'),
-                        mensaje: err.message
-                    }))
-                })
+                manejarErrorZod(res, resultadoValidacion)
             }
             
             const { notificacionesActivas } = resultadoValidacion.data

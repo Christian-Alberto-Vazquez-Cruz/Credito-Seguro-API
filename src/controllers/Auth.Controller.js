@@ -103,8 +103,6 @@ export class AuthController {
         }
     }
 
-
-    //OTROS
     static async refreshAccessToken(req, res) {
         try {
             const { refreshToken } = req.body

@@ -4,7 +4,7 @@ import { crearEntidadSchema, consultarEntidadSchema,
 import { ENTRADA_INVALIDA, MENSAJE_ERROR_GENERICO, 
     ENTIDAD_NO_ENCONTRADA, RFC_YA_REGISTRADO, PLAN_NO_ENCONTRADO,
     ENTIDAD_YA_ACTIVA, ENTIDAD_YA_INACTIVA} from '../utilities/Constantes.js'
-import { responderConError, responderConExito } from '../utilities/Manejadores.js'
+import { manejarErrorZod, responderConError, responderConExito } from '../utilities/Manejadores.js'
 
 export class EntidadesController {
     
@@ -14,12 +14,7 @@ export class EntidadesController {
             const resultadoValidacion = crearEntidadSchema.safeParse(req.body)
             
             if (!resultadoValidacion.success) {
-                return responderConError(res, 400, ENTRADA_INVALIDA, {
-                    errores: resultadoValidacion.error.errors.map(err => ({
-                        campo: err.path.join('.'),
-                        mensaje: err.message
-                    }))
-                })
+                return manejarErrorZod(res, resultadoValidacion);
             }
             
             const datos = resultadoValidacion.data
@@ -71,12 +66,7 @@ export class EntidadesController {
             const resultadoValidacion = consultarEntidadSchema.safeParse(req.params)
             
             if (!resultadoValidacion.success) {
-                return responderConError(res, 400, ENTRADA_INVALIDA, {
-                    errores: resultadoValidacion.error.errors.map(err => ({
-                        campo: err.path.join('.'),
-                        mensaje: err.message
-                    }))
-                })
+                return manejarErrorZod(res, resultadoValidacion);
             }
             
             const { id: idEntidad } = resultadoValidacion.data
@@ -112,12 +102,7 @@ export class EntidadesController {
             const resultadoValidacion = gestionarEstadoEntidadSchema.safeParse(req.body)
             
             if (!resultadoValidacion.success) {
-                return responderConError(res, 400, ENTRADA_INVALIDA, {
-                    errores: resultadoValidacion.error.errors.map(err => ({
-                        campo: err.path.join('.'),
-                        mensaje: err.message
-                    }))
-                })
+                return manejarErrorZod(res, resultadoValidacion);
             }
             
             const { id: idEntidad } = resultadoValidacion.data
@@ -165,12 +150,7 @@ export class EntidadesController {
             const resultadoValidacion = gestionarEstadoEntidadSchema.safeParse(req.body)
             
             if (!resultadoValidacion.success) {
-                return responderConError(res, 400, ENTRADA_INVALIDA, {
-                    errores: resultadoValidacion.error.errors.map(err => ({
-                        campo: err.path.join('.'),
-                        mensaje: err.message
-                    }))
-                })
+                return manejarErrorZod(res, resultadoValidacion);
             }
             
             const { id: idEntidad } = resultadoValidacion.data

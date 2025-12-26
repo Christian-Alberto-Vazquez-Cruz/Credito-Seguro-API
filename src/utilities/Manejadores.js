@@ -10,17 +10,33 @@ export const manejarResultado = (res, respuesta) => {
 };
 
 export const responderConExito = (res, status, mensaje, datos) => {
-    res.status(status).json({
+    const response = {
         error: false,
         mensaje,
         datos
-    });
+    }
+    
+    res.status(status).json(response);
 };
 
-export const responderConError = (res, status, mensaje) => {
-    res.status(status).json({
+export const responderConError = (res, status, mensaje, datos=null) => {
+    const response = {
         error: true,
         mensaje
-    });
+    };
+
+    if (datos !== null && datos !== undefined) {
+        response.datos = datos;
+    }
+
+    res.status(status).json(response);
 };
 
+export const manejarErrorZod = (res, resultadoValidacion) => {
+    return responderConError(res, 400, ENTRADA_INVALIDA, {
+        errores: resultadoValidacion.error.errors.map(err => ({
+            campo: err.path.join('.'),
+            mensaje: err.message
+        }))
+    });
+};

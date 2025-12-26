@@ -65,7 +65,6 @@ export const crearUsuarioSchema = z.object({
         }
         if (data.nombreLegal || data.rfc || data.idPlan) {
             addIssue(ctx, 'tipoEntidad', 'No debe especificar nombreLegal, rfc o idPlan para persona moral')
-
         }
     }
 })

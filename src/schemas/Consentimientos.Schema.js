@@ -14,7 +14,7 @@ export const revocarConsentimientoSchema = z.object({
     id: idNumberSchema
 })
 
-export const renovarConsentimientoEntidadSchema = z.object({
+export const renovarConsentimientoSchema = z.object({
     id: idNumberSchema,
     fechaVencimiento: isoDateSchema
 })

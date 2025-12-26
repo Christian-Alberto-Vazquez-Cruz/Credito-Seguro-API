@@ -1,11 +1,12 @@
 import {prisma} from '../lib/db.js'
 import { idParamSchema } from '../schemas/Primitivas.Schema.js'
 import { actualizarUsuarioSchema, crearUsuarioSchema } from '../schemas/Usuarios.Schema.js'
-import { ENTRADA_INVALIDA, MENSAJE_ERROR_GENERICO, RFC_YA_REGISTRADO,
-   CORREO_YA_REGISTRADO, ENTIDAD_NO_ENCONTRADA, ROL_NO_ENCONTRADO, 
-   PLAN_NO_ENCONTRADO
- } from '../utilities/Constantes.js'
-import { USUARIO_NO_ENCONTRADO } from '../utilities/constants/Usuarios.js'
+
+import { RFC_YA_REGISTRADO, CORREO_YA_REGISTRADO, ENTIDAD_NO_ENCONTRADA,
+    USUARIO_NO_ENCONTRADO
+ } from '../utilities/constants/Usuarios.js'
+
+ import { MENSAJE_ERROR_GENERICO } from '../utilities/constants/Constantes.js'
 
  import { responderConError, responderConExito, manejarErrorZod } from '../utilities/Manejadores.js'
 

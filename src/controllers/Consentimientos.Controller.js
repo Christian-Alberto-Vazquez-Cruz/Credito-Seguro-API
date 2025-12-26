@@ -2,13 +2,13 @@ import {prisma} from '../lib/db.js'
 import { crearConsentimientoSchema, renovarConsentimientoSchema, revocarConsentimientoSchema } from '../schemas/Consentimientos.Schema.js'
 import { FECHA_VENCIMIENTO_INVALIDA,
     CONSENTIMIENTO_ACTIVO_EXISTE, CONSENTIMIENTO_NO_ENCONTRADO,
-    CONSENTIMIENTO_YA_REVOCADO, SIN_AUTORIZACION,
+    CONSENTIMIENTO_YA_REVOCADO,
     CONSENTIMIENTO_REVOCADO_EXITOSAMENTE,
     CONSENTIMIENTO_ENCONTRADO,
     CONSENTIMIENTO_RENOVADO_EXITOSAMENTE
  } from '../utilities/constants/Consentimientos.js'
 
- import { MENSAJE_ERROR_GENERICO } from '../utilities/Constantes.js'
+ import { MENSAJE_ERROR_GENERICO, SIN_AUTORIZACION } from '../utilities/constants/Constantes.js'
 import { responderConError, responderConExito, manejarErrorZod } from '../utilities/Manejadores.js'
 
 export class ConsentimientosController {

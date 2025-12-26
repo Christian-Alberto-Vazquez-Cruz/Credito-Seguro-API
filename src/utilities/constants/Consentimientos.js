@@ -4,6 +4,5 @@ export const CONSENTIMIENTO_YA_REVOCADO = "El consentimiento ya se encuentra rev
 export const CONSENTIMIENTO_REVOCADO_EXITOSAMENTE = "Consentimiento revocado exitosamente"
 export const CONSENTIMIENTO_RENOVADO_EXITOSAMENTE = "Consentimiento renovado exitosamente"
 export const CONSENTIMIENTO_ENCONTRADO = "Consentimiento activo encontrado para el usuario"
-export const SIN_AUTORIZACION = "No cuenta con la autorización requerida"
 export const FECHA_VENCIMIENTO_INVALIDA ="La fecha de vencimiento debe ser posterior a la fecha actual"
 export const FECHA_NO_VALIDA = "La fecha no es válida"

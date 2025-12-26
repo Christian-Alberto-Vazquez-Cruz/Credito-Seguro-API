@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken'
 import { responderConError } from '../utilities/Manejadores.js'
-import { MENSAJE_ERROR_GENERICO } from '../utilities/Constantes.js'
+import { MENSAJE_ERROR_GENERICO } from '../utilities/constants/Constantes.js'
 
 export const validarJWT = (req, res, next) => {
   try {

@@ -1,6 +1,7 @@
 import {prisma} from '../lib/db.js'
 import { loginSchema } from '../schemas/Auth.Schema.js'
-import { ENTRADA_INVALIDA, CREDENCIALES_INCORRECTAS, CUENTA_INACTIVA, MENSAJE_ERROR_GENERICO } from '../utilities/Constantes.js'
+import { ENTRADA_INVALIDA, MENSAJE_ERROR_GENERICO} from '../utilities/constants/Constantes.js'
+import { CREDENCIALES_INCORRECTAS, CUENTA_INACTIVA } from '../utilities/constants/Usuarios.js'
 import { responderConError, responderConExito, manejarResultado } from '../utilities/Manejadores.js'
 import { compararContraseñaBCrypt, hashearASHA256 } from '../utilities/Hashing.js'
 import { generarJWT, generarRefreshToken, verificarRefreshToken } from '../utilities/GeneradorJWT.js'

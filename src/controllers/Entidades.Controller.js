@@ -1,9 +1,11 @@
 import { prisma } from '../lib/db.js'
 import { crearEntidadSchema, consultarEntidadSchema, 
     gestionarEstadoEntidadSchema } from '../schemas/Entidad.Schema.js'
-import { ENTRADA_INVALIDA, MENSAJE_ERROR_GENERICO, 
-    ENTIDAD_NO_ENCONTRADA, RFC_YA_REGISTRADO, PLAN_NO_ENCONTRADO,
-    ENTIDAD_YA_ACTIVA, ENTIDAD_YA_INACTIVA} from '../utilities/Constantes.js'
+import {  MENSAJE_ERROR_GENERICO} from '../utilities/constants/Constantes.js'
+import { ENTIDAD_NO_ENCONTRADA, RFC_YA_REGISTRADO, ENTIDAD_YA_ACTIVA,
+    ENTIDAD_YA_INACTIVA
+} from '../utilities/constants/Usuarios.js'
+
 import { manejarErrorZod, responderConError, responderConExito } from '../utilities/Manejadores.js'
 
 export class EntidadesController {

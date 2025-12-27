@@ -24,3 +24,15 @@ export const rfcMoralSchema = z.string()
   .toUpperCase()
   .length(12, "El RFC de persona moral debe tener 12 caracteres")
   .regex(/^[A-ZÑ&]{3}\d{6}[A-Z0-9]{3}$/, "Formato de RFC inválido para persona moral")
+
+export const rfcGenerico = z.string()
+    .trim()
+    .toUpperCase()
+    .refine(
+        (val) => val.length === 12 || val.length === 13,
+        "El RFC debe tener 12 o 13 caracteres"
+    )
+    .refine(
+        (val) => /^[A-ZÑ&]{3,4}\d{6}[A-Z0-9]{3}$/.test(val),
+        "Formato de RFC inválido"
+    )

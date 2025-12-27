@@ -1,0 +1,60 @@
+import {prisma} from '../lib/db.js'
+
+export class ConsumoService {
+    /**
+     * Verifica si la entidad puede realizar más consultas este mes
+     * @param {number} idEntidad 
+     * @param {number} maxConsultasMensuales 
+     * @returns {Promise<{permitido: boolean, consultasRealizadas: number, consultasDisponibles: number}>}
+     */
+    static async verificarLimiteConsultas(idEntidad, maxConsultasMensuales) {
+        const ahora = new Date()
+        const periodoInicio = new Date(ahora.getFullYear(), ahora.getMonth(), 1)
+
+        const consumo = await prisma.consumoEntidad.findUnique({
+            where: {
+                idEntidad_periodoInicio: {
+                    idEntidad: idEntidad,
+                    periodoInicio: periodoInicio
+                }
+            }
+        })
+
+        const consultasRealizadas = consumo?.consultasRealizadas || 0
+        const consultasDisponibles = maxConsultasMensuales - consultasRealizadas
+
+        return {
+            permitido: consultasRealizadas < maxConsultasMensuales,
+            consultasRealizadas,
+            consultasDisponibles
+        }
+    }
+
+    /**
+     * Registra una nueva consulta en el periodo actual
+     * @param {number} idEntidad 
+     */
+    static async registrarConsulta(idEntidad) {
+        const ahora = new Date()
+        const periodoInicio = new Date(ahora.getFullYear(), ahora.getMonth(), 1)
+
+        await prisma.consumoEntidad.upsert({
+            where: {
+                idEntidad_periodoInicio: {
+                    idEntidad: idEntidad,
+                    periodoInicio: periodoInicio
+                }
+            },
+            create: {
+                idEntidad: idEntidad,
+                periodoInicio: periodoInicio,
+                consultasRealizadas: 1,
+                ultimaActualizacion: ahora
+            },
+            update: {
+                consultasRealizadas: { increment: 1 },
+                ultimaActualizacion: ahora
+            }
+        })
+    }
+}

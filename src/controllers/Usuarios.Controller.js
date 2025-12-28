@@ -9,6 +9,7 @@ import { RFC_YA_REGISTRADO, CORREO_YA_REGISTRADO, ENTIDAD_NO_ENCONTRADA,
  import { MENSAJE_ERROR_GENERICO } from '../utilities/constants/Constantes.js'
 
  import { responderConError, responderConExito, manejarErrorZod } from '../utilities/Manejadores.js'
+import { hashearContraseñaBCrypt } from '../utilities/Hashing.js'
 
 export class UsuariosController {
     static async crearUsuario(req, res) {

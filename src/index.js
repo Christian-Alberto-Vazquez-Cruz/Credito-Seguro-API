@@ -11,6 +11,7 @@ import consultasHistorialRouter from "./routes/HistorialCrediticio.Routes.js"
 
 const app = express()
 app.use(cors());
+app.use(express.json())
 app.disable('x-powered-by');
 
 app.get("/consulta", async (req, res) => {

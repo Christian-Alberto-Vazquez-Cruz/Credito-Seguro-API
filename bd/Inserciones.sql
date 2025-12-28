@@ -1,7 +1,6 @@
 USE CreditoSeguro;
 GO
 
-
 INSERT INTO Rol (nombreRol) VALUES 
     ('USUARIO'),
     ('ADMINISTRADOR');

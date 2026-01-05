@@ -39,9 +39,11 @@ export class CirculoCreditoService {
 
   static async obtenerEstadisticasPago(rfc){
     const { data } = await api.get(`/pagos/estadisticas/${rfc}`)
+    return data
   }
 
   static async obtenerResumenBuro(rfc){
-    const { data } = await api.get(`/buro${rfc}`)
+    const { data } = await api.get(`/buro/${rfc}`)
+    return data
   }
 }

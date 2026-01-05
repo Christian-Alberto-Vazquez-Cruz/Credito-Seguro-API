@@ -8,6 +8,7 @@ import entidadesRouter from "./routes/Entidades.Routes.js"
 import consentimientosRouter from "./routes/Consentimientos.Routes.js"
 import consentimientosConsultaRouter from "./routes/ConsentiminetosConsulta.Routes.js"
 import consultasHistorialRouter from "./routes/HistorialCrediticio.Routes.js"
+import scoresRouter from "./routes/Score.Routes.js"
 
 const app = express()
 app.use(cors());
@@ -26,11 +27,10 @@ app.use("/entidades", entidadesRouter)
 app.use("/consentimientos", consentimientosRouter)
 app.use("/consentimientos-consulta", consentimientosConsultaRouter)
 app.use("/historial-crediticio", consultasHistorialRouter)
-// +¿app.use("/scores", scoresRouter)
+app.use("/scores", scoresRouter)
 // app.use("/notificaciones", notificacionesRouter)
 // app.use("/recomendaciones", recomedacionesRouter)
 // app.use("/planes", planesRouter)
-// app.use("/roles", rolesRouter)
 // app.use("/consumo")
 
 app.listen(env.PORT, () => {

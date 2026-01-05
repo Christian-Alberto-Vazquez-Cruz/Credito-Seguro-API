@@ -7,6 +7,7 @@ import { ConsentimientoService } from '../services/Consentimiento.Service.js'
 import { HISTORIAL_OBTENIDO, LIMITE_ALCANZADO, RESUMEN_CREDITICIO_OBTENIDO } from '../utilities/constants/Consultas.js'
 import { responderConError, responderConExito, manejarErrorZod } from '../utilities/Manejadores.js'
 import { consultarHistorialCrediticioSchema } from '../schemas/HistorialCreditio.Schema.js'
+import { MENSAJE_ERROR_GENERICO } from '../utilities/constants/Constantes.js'
 
 export class HistorialCrediticioController {
 
@@ -160,21 +161,20 @@ export class HistorialCrediticioController {
                 )
             }
 
+            await ConsumoService.registrarConsulta(idEntidadConsultante)
+
             const resumenCrediticio = await CirculoCreditoService.obtenerResumenCrediticio(rfc)
 
-            await Promise.all([
-                LogService.registrarLog({
-                    idConsentimiento: permisoConsulta.consentimientoId || 0,
-                    idEntidadTitular: entidadTitular.id,
-                    idEntidadConsultante,
-                    idUsuarioOperador: req.usuario.id,
-                    entidadConsultante: req.usuario.entidad.nombre,
-                    tipoConsulta: 'RESUMEN_CREDITICIO',
-                    resultadoConsulta: 'EXITOSO',
-                    ipOrigen: req.ip || req.connection?.remoteAddress
-                }),
-                ConsumoService.registrarConsulta(idEntidadConsultante)
-            ])
+            await LogService.registrarLog({
+                idConsentimiento: permisoConsulta.consentimientoId || 0,
+                idEntidadTitular: entidadTitular.id,
+                idEntidadConsultante,
+                idUsuarioOperador: req.usuario.id,
+                entidadConsultante: req.usuario.entidad.nombre,
+                tipoConsulta: 'RESUMEN_CREDITICIO',
+                resultadoConsulta: 'EXITOSO',
+                ipOrigen: req.ip || req.connection?.remoteAddress
+            })
 
             return responderConExito(res, 200, RESUMEN_CREDITICIO_OBTENIDO, {
                 entidad: {

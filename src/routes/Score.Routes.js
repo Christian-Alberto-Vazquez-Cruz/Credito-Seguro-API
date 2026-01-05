@@ -6,7 +6,7 @@ const router = Router()
 
 router.use(validarJWT)
 
-router.post('/calcular', ScoringController.calcularScoring)
+router.post('/:rfc/calcular', ScoringController.calcularScoring)
 router.get('/historial/:rfc', ScoringController.obtenerHistorialScoring)
 router.get('/ultimo/:rfc', ScoringController.obtenerUltimoScoring)
 router.get('/comparar/:rfc', ScoringController.compararScoring)

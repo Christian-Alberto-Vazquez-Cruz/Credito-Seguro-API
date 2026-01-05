@@ -7,8 +7,8 @@ const router = Router()
 router.use(validarJWT)
 router.post('/', ConsentimientosController.crearConsentimiento)
 router.get('/:id', ConsentimientosController.consultarConsentimiento)
-router.get('/verificar', ConsentimientosController.verificarConsentimientoActivo)
 router.patch('/revocar', ConsentimientosController.revocarConsentimiento)
+//Solo se permite renovar por vencimiento (no revocado)
 router.patch('/renovar', ConsentimientosController.renovarConsentimiento)
 
 export default router

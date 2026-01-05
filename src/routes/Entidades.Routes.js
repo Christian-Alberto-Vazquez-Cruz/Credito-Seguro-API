@@ -2,6 +2,8 @@ import {Router} from 'express'
 import { EntidadesController } from '../controllers/Entidades.Controller.js'
 
 const router = Router()
+
+//Utilizar JWT y Middleware Admin
 router.post("/", EntidadesController.crearEntidad)    
 router.get("/:id", EntidadesController.consultarEntidad)
 router.patch("/desactivar", EntidadesController.desactivarEntidad)

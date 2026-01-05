@@ -9,6 +9,4 @@ router.get('/:id', validarJWT, ConsentimientoConsultaController.consultarConsent
 router.patch('/revocar', validarJWT, ConsentimientoConsultaController.revocarConsentimiento)
 router.post('/verificar', validarJWT, ConsentimientoConsultaController.verificarConsentimiento)
 
-
-
 export default router

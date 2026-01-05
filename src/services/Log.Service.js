@@ -7,7 +7,7 @@ export class LogService {
      */
     static async registrarLog(params) {
         const {
-            idConsentimiento,
+            idConsentimiento: idConsentimiento,
             idEntidadTitular,
             idEntidadConsultante,
             idUsuarioOperador,
@@ -17,20 +17,20 @@ export class LogService {
             ipOrigen
         } = params
 
-        await prisma.logConsultaTerceros.create({
-            data: {
-                idConsentimiento: idConsentimiento || 0,
-                idEntidadTitular,
-                idEntidadConsultante,
-                idUsuarioOperador,
-                entidadConsultante,
-                tipoConsulta,
-                resultadoConsulta,
-                ipOrigen
-            }
-        })
+    await prisma.logConsultaTerceros.create({
+        data: {
+            idConsentimiento: idConsentimiento || null,
+            idEntidadTitular,
+            idEntidadConsultante,
+            idUsuarioOperador,
+            entidadConsultante,
+            tipoConsulta,
+            resultadoConsulta,
+            ipOrigen
+        }
+    })
 
-        if (idConsentimiento && resultadoConsulta === 'EXITOSO') {
+    if (idConsentimiento && idConsentimiento > 0 && resultadoConsulta === 'EXITOSO') {
             await prisma.consentimientoConsulta.update({
                 where: { id: idConsentimiento },
                 data: {

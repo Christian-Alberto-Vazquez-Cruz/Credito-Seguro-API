@@ -31,9 +31,13 @@ export class ConsentimientoConsultaController {
             const datos = resultadoValidacion.data
             const idEntidadTitular = req.usuario.entidad.id
 
-            const fechaInicio = new Date()
+            const ahora = new Date()
+            const fechaInicio = new Date(ahora.getFullYear(), ahora.getMonth(), 
+                 ahora.getDate(), 0, 0, 0,0)
 
-            if (datos.fechaVencimiento <= fechaInicio) {
+            const fechaVencimiento = datos.fechaVencimiento
+
+            if (fechaVencimiento <= fechaInicio) {
                 return responderConError(res, 400, FECHA_NO_VALIDA)
             }
 

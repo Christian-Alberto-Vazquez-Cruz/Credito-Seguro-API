@@ -246,16 +246,21 @@ GO
 -- ==========================================
 -- Roles 
 -- ==========================================
-CREATE ROLE rol_consulta_readonly;
-CREATE ROLE rol_escritura;
+IF NOT EXISTS (SELECT * FROM sys.database_principals WHERE name = 'rol_consulta_readonly')
+    CREATE ROLE rol_consulta_readonly;
+GO
+
+IF NOT EXISTS (SELECT * FROM sys.database_principals WHERE name = 'rol_escritura')
+    CREATE ROLE rol_escritura;
+GO
 
 -- Permisos readonly --
 GRANT SELECT ON SCHEMA::dbo TO rol_consulta_readonly;
 GO
 
 -- Permisos escritura --
-GRANT INSERT ON SCHEMA::dbo TO rol_escritura;
-REVOKE INSERT ON rol FROM rol_Escritura;
+GRANT INSERT, UPDATE ON SCHEMA::dbo TO rol_escritura;
+REVOKE INSERT ON Rol FROM rol_Escritura;
 GO
 
 -- ==========================================

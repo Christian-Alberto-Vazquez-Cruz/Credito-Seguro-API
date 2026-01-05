@@ -13,6 +13,18 @@ export const idNumberSchema = z.number()
   .datetime("La fecha debe ser válida en formato ISO")
   .transform(str => new Date(str))
 
+export const simpleDateSchema = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/, "La fecha debe tener formato YYYY-MM-DD")
+  .transform(str => {
+    const [year, month, day] = str.split('-').map(Number)
+    return new Date(year, month - 1, day, 0, 0, 0, 0)
+  })
+  .refine(fecha => !isNaN(fecha.getTime()), "Fecha inválida")
+
+export const fechaVencimientoSchema = simpleDateSchema
+  .refine(fecha => fecha > new Date(), "La fecha de vencimiento debe ser futura")
+
 export const rfcFisicaSchema = z.string()
   .trim()
   .toUpperCase()

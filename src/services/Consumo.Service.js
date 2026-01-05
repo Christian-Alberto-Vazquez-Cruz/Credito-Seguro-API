@@ -1,4 +1,5 @@
 import {prisma} from '../lib/db.js'
+import { obtenerInicioMesActual } from '../utilities/Fechas.js'
 
 export class ConsumoService {
     /**
@@ -8,8 +9,7 @@ export class ConsumoService {
      * @returns {Promise<{permitido: boolean, consultasRealizadas: number, consultasDisponibles: number}>}
      */
     static async verificarLimiteConsultas(idEntidad, maxConsultasMensuales) {
-        const ahora = new Date()
-        const periodoInicio = new Date(ahora.getFullYear(), ahora.getMonth(), 1)
+        const periodoInicio = obtenerInicioMesActual()
 
         const consumo = await prisma.consumoEntidad.findUnique({
             where: {
@@ -36,7 +36,22 @@ export class ConsumoService {
      */
     static async registrarConsulta(idEntidad) {
         const ahora = new Date()
-        const periodoInicio = new Date(ahora.getFullYear(), ahora.getMonth(), 1)
+        const periodoInicio = obtenerInicioMesActual()
+
+        const consumo = await prisma.consumoEntidad.findUnique({
+            where: {
+                idEntidad_periodoInicio: {
+                    idEntidad,
+                    periodoInicio
+                }
+            }
+        })
+
+        if (consumo) {
+            console.log("Consumo existente:", consumo)
+        } else {
+            console.log("No se ha encontrado el consumo")
+        }
 
         await prisma.consumoEntidad.upsert({
             where: {

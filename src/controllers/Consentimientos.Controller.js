@@ -1,5 +1,5 @@
 import {prisma} from '../lib/db.js'
-import { crearConsentimientoSchema, renovarConsentimientoSchema, revocarConsentimientoSchema } from '../schemas/Consentimientos.Schema.js'
+import { consultarConsentimientoSchema, crearConsentimientoSchema, renovarConsentimientoSchema, revocarConsentimientoSchema } from '../schemas/Consentimientos.Schema.js'
 import { FECHA_VENCIMIENTO_INVALIDA,
     CONSENTIMIENTO_ACTIVO_EXISTE, CONSENTIMIENTO_NO_ENCONTRADO,
     CONSENTIMIENTO_YA_REVOCADO,
@@ -29,9 +29,13 @@ export class ConsentimientosController {
             const datos = resultadoValidacion.data
             const idEntidad = req.usuario.entidad.id
 
-            const fechaInicio = new Date()
+            const ahora = new Date()
+            const fechaInicio = new Date(ahora.getFullYear(), ahora.getMonth(), 
+                ahora.getDate(), 0, 0, 0, 0)
 
-            if (datos.fechaVencimiento <= fechaInicio) {
+            const fechaVencimiento = datos.fechaVencimiento
+
+            if (fechaVencimiento <= fechaInicio) {
                 return responderConError(res, 400, FECHA_VENCIMIENTO_INVALIDA)
             }
 
@@ -40,7 +44,7 @@ export class ConsentimientosController {
                     idEntidad: idEntidad,
                     revocado: false,
                     fechaVencimiento: {
-                        gte: new Date()
+                        gte: ahora
                     }
                 }
             })
@@ -54,7 +58,7 @@ export class ConsentimientosController {
                 data: {
                     idEntidad: idEntidad,
                     fechaInicio: fechaInicio,
-                    fechaVencimiento: datos.fechaVencimiento
+                    fechaVencimiento: fechaVencimiento
                 }
             })
 
@@ -83,7 +87,7 @@ export class ConsentimientosController {
      */
     static async consultarConsentimiento(req, res) {
         try {
-            const resultadoValidacion = consultarConsentimientoEntidadSchema.safeParse(req.params)
+            const resultadoValidacion = consultarConsentimientoSchema.safeParse(req.params)
 
             if (!resultadoValidacion.success) {
                 return manejarErrorZod(res, resultadoValidacion);
@@ -235,50 +239,6 @@ export class ConsentimientosController {
 
         } catch (error) {
             console.error('Error al renovar consentimiento de entidad:', error)
-            return responderConError(res, 500, MENSAJE_ERROR_GENERICO)
-        }
-    }
-
-    /**
-     * Verifica si la entidad actual tiene consentimiento activo
-     * GET /api/consentimientos-entidad/verificar
-     * Requiere: Autenticación
-     */
-    static async verificarConsentimientoActivo(req, res) {
-        try {
-            const idEntidad = req.usuario.entidad.id
-
-            const consentimientoActivo = await prisma.consentimientoEntidad.findFirst({
-                where: {
-                    idEntidad: idEntidad,
-                    revocado: false,
-                    fechaVencimiento: {
-                        gte: new Date()
-                    }
-                },
-                orderBy: {
-                    fechaVencimiento: 'desc'
-                }
-            })
-
-            if (!consentimientoActivo) {
-                return responderConExito(res, 200, CONSENTIMIENTO_NO_ENCONTRADO, {
-                    tieneConsentimiento: false,
-                    consentimiento: null
-                })
-            }
-
-            return responderConExito(res, 200, CONSENTIMIENTO_ENCONTRADO, {
-                tieneConsentimiento: true,
-                consentimiento: {
-                    id: consentimientoActivo.id,
-                    fechaInicio: consentimientoActivo.fechaInicio,
-                    fechaVencimiento: consentimientoActivo.fechaVencimiento
-                }
-            })
-
-        } catch (error) {
-            console.error('Error al verificar consentimiento activo:', error)
             return responderConError(res, 500, MENSAJE_ERROR_GENERICO)
         }
     }

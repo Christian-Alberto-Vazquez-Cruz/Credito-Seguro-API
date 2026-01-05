@@ -95,7 +95,7 @@ export class HistorialCrediticioController {
                 },
                 resumenCrediticio,
                 obligaciones,
-                pagos: pagos.slice(0, 50), // Limitado a últimos 50 pagos
+                pagos,
                 consultasRestantes: limiteConsultas.consultasDisponibles - 1
             })
 
@@ -156,7 +156,7 @@ export class HistorialCrediticioController {
             if (!limiteConsultas.permitido) {
                 return responderConError(
                     res, 429, 
-                    LIMITE_ALCANZADO(limitesConsultas.consultasRealizadas, 
+                    LIMITE_ALCANZADO(limiteConsultas.consultasRealizadas, 
                         req.usuario.entidad.maxConsultasMensuales)
                 )
             }

@@ -2,11 +2,12 @@ import { ConsentimientoService } from "../services/Consentimiento.Service.js"
 import { ConsumoService } from "../services/Consumo.Service.js"
 import { ScoringService } from "../services/scoring.service.js"
 import { LogService } from "../services/Log.Service.js"
+import {prisma} from '../lib/db.js'
 
 import { responderConError, responderConExito, manejarErrorZod } from "../utilities/Manejadores.js"
 import { LIMITE_ALCANZADO } from "../utilities/constants/Consultas.js"
 import { consultarScoringSchema } from "../schemas/Scoring.Schema.js"
-import { SIN_AUTORIZACION } from "../utilities/constants/Constantes.js"
+import { MENSAJE_ERROR_GENERICO, SIN_AUTORIZACION } from "../utilities/constants/Constantes.js"
 
 export class ScoringController {
 
@@ -17,7 +18,7 @@ export class ScoringController {
      */
     static async calcularScoring(req, res) {
         try {
-            const resultadoValidacion = consultarScoringSchema.safeParse(req.body)
+            const resultadoValidacion = consultarScoringSchema.safeParse(req.params)
 
             if (!resultadoValidacion.success) {
                 return manejarErrorZod(res, resultadoValidacion)

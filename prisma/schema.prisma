@@ -1,5 +1,5 @@
 generator client {
-  provider = "prisma-client"
+  provider = "prisma-client-js"
   output   = "../generated/prisma"
 }
 
@@ -61,6 +61,7 @@ model Entidad {
   HistorialScore                                                              HistorialScore[]
   LogConsultaTerceros                                                         LogConsultaTerceros[]
   Usuario                                                                     Usuario[]
+  Reclamacion                                                                 Reclamacion[]
 }
 
 model HistorialScore {
@@ -72,6 +73,7 @@ model HistorialScore {
   factoresNegativos String?   @db.NVarChar(Max)
   fechaCalculo      DateTime? @default(now(), map: "DF__Historial__fecha__534D60F1")
   Entidad           Entidad   @relation(fields: [idEntidad], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "FK_HistorialScore_Entidad")
+  Reclamacion       Reclamacion[]
 }
 
 model LogConsultaTerceros {
@@ -152,6 +154,26 @@ model Usuario {
   Notificacion          Notificacion[]
   Recomendacion         Recomendacion[]
   RefreshToken          RefreshToken[]
+  Reclamacion           Reclamacion[]
   Entidad               Entidad               @relation(fields: [idEntidad], references: [id], onUpdate: NoAction, map: "FK_Usuario_Entidad")
   Rol                   Rol                   @relation(fields: [idRol], references: [id], onUpdate: NoAction, map: "FK_Usuario_Rol")
+}
+
+model Reclamacion {
+  id                Int       @id @default(autoincrement())
+  folio             String    @unique @db.NVarChar(20)
+  idUsuario         Int
+  idEntidad         Int
+  idHistorialScore  Int?
+  evidenciaUrl      String?   @db.NVarChar(500)
+  motivo            String    @db.NVarChar(Max)
+  estado            String    @default("PENDIENTE") @db.NVarChar(30)
+  respuestaAdmin    String?   @db.NVarChar(Max)
+  fechaCreacion     DateTime? @default(now())
+  fechaResolucion   DateTime?
+  
+
+  Usuario           Usuario   @relation(fields: [idUsuario], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Reclamacion_Usuario")
+  Entidad           Entidad   @relation(fields: [idEntidad], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Reclamacion_Entidad")
+  HistorialScore    HistorialScore? @relation(fields: [idHistorialScore], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_Reclamacion_Historial")
 }

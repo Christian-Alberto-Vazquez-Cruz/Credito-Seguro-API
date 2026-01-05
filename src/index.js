@@ -5,6 +5,7 @@ import authRouter from  './routes/Auth.Routes.js'
 import usuariosRouter from './routes/Usuarios.Routes.js'
 import entidadesRouter from "./routes/Entidades.Routes.js"
 import consentimientosRouter from "./routes/Consentimientos.Routes.js"
+import reclamacionesRouter from "./routes/Reclamaciones.Routes.js"
 
 dotenv.config()
 const app = express()
@@ -21,6 +22,7 @@ app.use("/auth", authRouter)
 app.use("/usuarios", usuariosRouter)
 app.use("/entidades", entidadesRouter)
 app.use("/consentimientos", consentimientosRouter)
+app.use("/reclamaciones", reclamacionesRouter)
 // app.use("/consentimientos-consulta", consentimientoEntidad)
 // app.use("/consultas", consultasRouter)
 // app.use("/scores", scoresRouter)

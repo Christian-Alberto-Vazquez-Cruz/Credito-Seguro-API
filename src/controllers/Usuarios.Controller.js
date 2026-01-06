@@ -331,5 +331,49 @@ export class UsuariosController {
             return responderConError(res, 500, MENSAJE_ERROR_GENERICO)
         }
     }
+static async obtenerMiPerfil(req, res) {
+    try {
+    
+      const idUsuario = req.usuario?.id || req.usuario?.idUsuario;
 
+      const usuario = await prisma.usuario.findUnique({
+        where: { id: idUsuario },
+        select: {
+          id: true,
+          nombre: true,
+          correo: true,
+          activo: true,
+          notificacionesActivas: true,
+          Rol: { select: { nombreRol: true } },
+          Entidad: {
+            select: {
+              id: true,
+              nombreLegal: true,
+              rfc: true,           
+              tipoEntidad: true,
+              activo: true,
+              PlanSuscripcion: { select: { tipoPlan: true, maxConsultasMensuales: true } },
+            },
+          },
+        },
+      });
+
+      if (!usuario) return responderConError(res, 404, "Usuario no encontrado");
+
+      return responderConExito(res, 200, "Perfil obtenido", {
+        usuario: {
+          id: usuario.id,
+          nombre: usuario.nombre,
+          correo: usuario.correo,
+          rol: usuario.Rol?.nombreRol,
+          activo: usuario.activo,
+          notificacionesActivas: usuario.notificacionesActivas,
+        },
+        entidad: usuario.Entidad,
+      });
+    } catch (e) {
+      console.error("Error al obtener mi perfil:", e);
+      return responderConError(res, 500, MENSAJE_ERROR_GENERICO);
+    }
+  }
 }

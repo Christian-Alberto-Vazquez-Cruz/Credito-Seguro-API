@@ -1,0 +1,5 @@
+export const NO_CONSENTIMIENTO_PROPIO = "No puede otorgar consentimiento a su propia entidad"
+export const CONSENTIMIENTO_CONSULTA_CREADO = "Consentimiento de consulta creado exitosamente"
+export const CONSENTIMIENTO_CONSULTA_REVOCADO = "Consentimiento de consulta revocado exitosamente"
+export const CONSENTIMIENTO_CONSULTA_ENCONTRADO = "Consentimiento activo encontrado"
+export const CONSENTIMIENTO_CONSULTA_NO_ENCONTRADO = "No existe consentimiento válido para esta consulta"

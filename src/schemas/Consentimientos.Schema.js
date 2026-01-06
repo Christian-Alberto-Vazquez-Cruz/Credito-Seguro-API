@@ -1,9 +1,9 @@
 import { z } from '../lib/zod.js'
-import { idNumberSchema, idParamSchema, isoDateSchema } from './Primitivas.Schema.js'
+import { fechaVencimientoSchema, idNumberSchema, idParamSchema, isoDateSchema } from './Primitivas.Schema.js'
 
 
 export const crearConsentimientoSchema = z.object({    
-    fechaVencimiento: isoDateSchema
+    fechaVencimiento: fechaVencimientoSchema
 })
 
 export const consultarConsentimientoSchema = z.object({
@@ -16,6 +16,6 @@ export const revocarConsentimientoSchema = z.object({
 
 export const renovarConsentimientoSchema = z.object({
     id: idNumberSchema,
-    fechaVencimiento: isoDateSchema
+    fechaVencimiento: fechaVencimientoSchema
 })
 

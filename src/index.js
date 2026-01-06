@@ -1,15 +1,19 @@
+import {env} from './config/env.js'
+
 import express from 'express'
-import dotenv from 'dotenv'
 import cors from 'cors'
 import authRouter from  './routes/Auth.Routes.js'
 import usuariosRouter from './routes/Usuarios.Routes.js'
 import entidadesRouter from "./routes/Entidades.Routes.js"
 import consentimientosRouter from "./routes/Consentimientos.Routes.js"
 import reclamacionesRouter from "./routes/Reclamaciones.Routes.js"
+import consentimientosConsultaRouter from "./routes/ConsentiminetosConsulta.Routes.js"
+import consultasHistorialRouter from "./routes/HistorialCrediticio.Routes.js"
+import scoresRouter from "./routes/Score.Routes.js"
 
-dotenv.config()
 const app = express()
 app.use(cors());
+app.use(express.json())
 app.disable('x-powered-by');
 
 app.get("/consulta", async (req, res) => {
@@ -26,14 +30,14 @@ app.use("/reclamaciones", reclamacionesRouter)
 // app.use("/consentimientos-consulta", consentimientoEntidad)
 // app.use("/consultas", consultasRouter)
 // app.use("/scores", scoresRouter)
+app.use("/consentimientos-consulta", consentimientosConsultaRouter)
+app.use("/historial-crediticio", consultasHistorialRouter)
+app.use("/scores", scoresRouter)
 // app.use("/notificaciones", notificacionesRouter)
 // app.use("/recomendaciones", recomedacionesRouter)
 // app.use("/planes", planesRouter)
-// app.use("/roles", rolesRouter)
 // app.use("/consumo")
 
-
-
-
-
-app.listen(3001, () => console.log("Escuchando en el puerto 3001"))
+app.listen(env.PORT, () => {
+  console.log(`Escuchando en el puerto: ${env.PORT}`)
+}) 

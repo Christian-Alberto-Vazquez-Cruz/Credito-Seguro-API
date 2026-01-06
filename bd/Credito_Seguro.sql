@@ -76,7 +76,7 @@ CREATE TABLE Usuario (
     idRol INT NOT NULL,
     nombre NVARCHAR(100) NOT NULL,
     correo NVARCHAR(255) NOT NULL UNIQUE,
-    contraseniaHash VARCHAR(255) NOT NULL;
+    contraseniaHash VARCHAR(255) NOT NULL,
     fechaCreacion DATETIME2 DEFAULT GETDATE(),
     activo BIT DEFAULT 1,
     notificacionesActivas BIT DEFAULT 1,
@@ -157,8 +157,8 @@ GO
 CREATE TABLE ConsentimientoEntidad (
     id INT IDENTITY(1,1) PRIMARY KEY,
     idEntidad INT NOT NULL,
-    fechaInicio DATETIME2 NOT NULL,
-    fechaVencimiento DATETIME2 NOT NULL,
+    fechaInicio DATE NOT NULL,
+    fechaVencimiento DATE NOT NULL,
     revocado BIT DEFAULT 0,
     fechaRevocacion DATETIME2,
     
@@ -173,8 +173,8 @@ CREATE TABLE ConsentimientoConsulta (
     idEntidadConsultante INT NOT NULL,
     
     fechaConsentimiento DATETIME2 DEFAULT GETDATE(),
-    fechaInicio DATETIME2 NOT NULL,
-    fechaVencimiento DATETIME2 NOT NULL,
+    fechaInicio DATE NOT NULL,
+    fechaVencimiento DATE NOT NULL,
     revocado BIT DEFAULT 0,
     fechaRevocacion DATETIME2,    
     ipOrigen NVARCHAR(45),
@@ -188,17 +188,13 @@ CREATE TABLE ConsentimientoConsulta (
         FOREIGN KEY (idEntidadConsultante) REFERENCES Entidad(id) ON DELETE NO ACTION,
     
     CONSTRAINT CHK_ConsentimientoConsulta_Fechas 
-        CHECK (fechaVencimiento > fechaInicio),
-    
-    CONSTRAINT CHK_ConsentimientoConsulta_Estado 
-        CHECK (estadoConsentimiento IN ('ACTIVO', 'EXPIRADO', 'REVOCADO', 'PAUSADO')),
-        
+        CHECK (fechaVencimiento > fechaInicio)
 );
 GO
 
 CREATE TABLE LogConsultaTerceros (
     id INT IDENTITY(1,1) PRIMARY KEY,
-    idConsentimiento INT NOT NULL,
+    idConsentimiento INT NULL,
     idEntidadTitular INT NOT NULL,
     idEntidadConsultante INT NOT NULL,
     idUsuarioOperador INT NOT NULL, 
@@ -250,16 +246,21 @@ GO
 -- ==========================================
 -- Roles 
 -- ==========================================
-CREATE ROLE rol_consulta_readonly;
-CREATE ROLE rol_escritura;
+IF NOT EXISTS (SELECT * FROM sys.database_principals WHERE name = 'rol_consulta_readonly')
+    CREATE ROLE rol_consulta_readonly;
+GO
+
+IF NOT EXISTS (SELECT * FROM sys.database_principals WHERE name = 'rol_escritura')
+    CREATE ROLE rol_escritura;
+GO
 
 -- Permisos readonly --
 GRANT SELECT ON SCHEMA::dbo TO rol_consulta_readonly;
 GO
 
 -- Permisos escritura --
-GRANT INSERT ON SCHEMA::dbo TO rol_escritura;
-REVOKE INSERT ON rol FROM rol_Escritura;
+GRANT INSERT, UPDATE ON SCHEMA::dbo TO rol_escritura;
+REVOKE INSERT ON Rol FROM rol_Escritura;
 GO
 
 -- ==========================================

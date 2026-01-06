@@ -1,9 +1,11 @@
 import {prisma} from '../lib/db.js'
 import { loginSchema } from '../schemas/Auth.Schema.js'
-import { ENTRADA_INVALIDA, CREDENCIALES_INCORRECTAS, CUENTA_INACTIVA, MENSAJE_ERROR_GENERICO } from '../utilities/Constantes.js'
+import { ENTRADA_INVALIDA, MENSAJE_ERROR_GENERICO} from '../utilities/constants/Constantes.js'
+import { CREDENCIALES_INCORRECTAS, CUENTA_INACTIVA } from '../utilities/constants/Usuarios.js'
 import { responderConError, responderConExito, manejarResultado } from '../utilities/Manejadores.js'
 import { compararContraseñaBCrypt, hashearASHA256 } from '../utilities/Hashing.js'
 import { generarJWT, generarRefreshToken, verificarRefreshToken } from '../utilities/GeneradorJWT.js'
+import { REFRESH_TOKEN_INVALIDO, REFRESH_TOKEN_REQUERIDO } from '../utilities/constants/Auth.js'
 
 export class AuthController {
     static async login(req, res) {
@@ -195,11 +197,16 @@ export class AuthController {
         try {
             const { refreshToken } = req.body
 
-            if (refreshToken) {
-                await prisma.refreshToken.deleteMany({
-                    where: { token: refreshToken }
-                })
+                
+            if (!refreshToken) {
+                 return responderConError(res, 400, 'Refresh token requerido')
             }
+
+            const tokenHash = hashearASHA256(refreshToken)
+
+            await prisma.refreshToken.deleteMany({
+            where: { tokenHash }
+            })
 
             return responderConExito(res, 200, 'Logout exitoso', null)
 

@@ -1,3 +1,5 @@
+import { ENTRADA_INVALIDA } from "./constants/Constantes.js";
+
 export const manejarResultado = (res, respuesta) => {
     const status = respuesta.status;
     const esExitoso = status >= 200 && status < 300;
@@ -34,7 +36,7 @@ export const responderConError = (res, status, mensaje, datos=null) => {
 
 export const manejarErrorZod = (res, resultadoValidacion) => {
     return responderConError(res, 400, ENTRADA_INVALIDA, {
-        errores: resultadoValidacion.error.errors.map(err => ({
+        errores: resultadoValidacion.error.issues.map(err => ({
             campo: err.path.join('.'),
             mensaje: err.message
         }))

@@ -33,6 +33,8 @@ app.use("/reclamaciones", reclamacionesRouter)
 app.use("/consentimientos-consulta", consentimientosConsultaRouter)
 app.use("/historial-crediticio", consultasHistorialRouter)
 app.use("/scores", scoresRouter)
+app.use(express.json({ limit: '10mb' })); 
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
 // app.use("/notificaciones", notificacionesRouter)
 // app.use("/recomendaciones", recomedacionesRouter)
 // app.use("/planes", planesRouter)

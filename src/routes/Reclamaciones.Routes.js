@@ -5,8 +5,8 @@ import {
     atenderReclamacion 
 } from '../controllers/Reclamaciones.Controller.js';
 
-import { validarJWT } from '../middlewares/ValidarJWT.js';
-import { validarAdmin } from '../middlewares/ValidarAdmin.js';
+import { validarJWT } from '../middleware/ValidarJWT.js';
+import { validarAdmin } from '../middleware/ValidarAdmin.js';
 
 const router = Router();
 

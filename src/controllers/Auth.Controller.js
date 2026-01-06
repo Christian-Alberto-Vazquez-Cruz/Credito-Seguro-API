@@ -78,6 +78,7 @@ export class AuthController {
                     rol: usuario.Rol.nombreRol,
                     entidad: {
                         id: usuario.Entidad.id,
+                        rfc: usuario.Entidad.rfc,
                         nombreLegal: usuario.Entidad.nombreLegal,
                         tipoEntidad: usuario.Entidad.tipoEntidad
                     }

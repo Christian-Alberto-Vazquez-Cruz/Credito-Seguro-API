@@ -102,7 +102,7 @@ CREATE TABLE HistorialScore (
     CONSTRAINT FK_HistorialScore_Entidad
         FOREIGN KEY (idEntidad) REFERENCES Entidad(id) ON DELETE CASCADE,
 
-    CONSTRAINT CHK_HistorialScore_Puntaje CHECK (puntajeScore BETWEEN 300 AND 850),
+    CONSTRAINT CHK_HistorialScore_Puntaje CHECK (puntajeScore BETWEEN 0 AND 1000),
     CONSTRAINT CHK_HistorialScore_Riesgo CHECK (nivelRiesgo IN ('EXCELENTE', 'MUY_BUENO', 'BUENO', 'REGULAR', 'MALO', 'MUY_MALO'))
 
 );

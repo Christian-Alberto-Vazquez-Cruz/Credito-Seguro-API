@@ -9,7 +9,7 @@ datasource db {
 }
 
 model ConsentimientoConsulta {
-  id                                                           Int                   @id(map: "PK__Consenti__3213E83F2D2863D8") @default(autoincrement())
+  id                                                           Int                   @id(map: "PK__Consenti__3213E83F78647904") @default(autoincrement())
   idEntidadTitular                                             Int
   idEntidadConsultante                                         Int
   fechaConsentimiento                                          DateTime?
@@ -26,7 +26,7 @@ model ConsentimientoConsulta {
 }
 
 model ConsentimientoEntidad {
-  id               Int       @id(map: "PK__Consenti__3213E83F30591CF6") @default(autoincrement())
+  id               Int       @id(map: "PK__Consenti__3213E83FA7B47E85") @default(autoincrement())
   idEntidad        Int
   fechaInicio      DateTime  @db.Date
   fechaVencimiento DateTime  @db.Date
@@ -46,11 +46,11 @@ model ConsumoEntidad {
 }
 
 model Entidad {
-  id                                                                          Int                      @id(map: "PK__Entidad__3213E83F2906F917") @default(autoincrement())
+  id                                                                          Int                      @id(map: "PK__Entidad__3213E83F894048E6") @default(autoincrement())
   idPlan                                                                      Int
   tipoEntidad                                                                 String                   @db.NVarChar(10)
   nombreLegal                                                                 String                   @db.NVarChar(200)
-  rfc                                                                         String                   @unique(map: "UQ__Entidad__C2B03494BFA4F8E7") @db.NVarChar(13)
+  rfc                                                                         String                   @unique(map: "UQ__Entidad__C2B0349401F62DDA") @db.NVarChar(13)
   fechaAlta                                                                   DateTime?
   activo                                                                      Boolean?
   ConsentimientoConsulta_ConsentimientoConsulta_idEntidadTitularToEntidad     ConsentimientoConsulta[] @relation("ConsentimientoConsulta_idEntidadTitularToEntidad")
@@ -60,24 +60,24 @@ model Entidad {
   PlanSuscripcion                                                             PlanSuscripcion          @relation(fields: [idPlan], references: [id], onUpdate: NoAction, map: "FK_Entidad_IdPlan")
   HistorialScore                                                              HistorialScore[]
   LogConsultaTerceros                                                         LogConsultaTerceros[]
-  Usuario                                                                     Usuario[]
   Reclamacion                                                                 Reclamacion[]
+  Usuario                                                                     Usuario[]
 }
 
 model HistorialScore {
-  id                Int       @id(map: "PK__Historia__3213E83F22454CF6") @default(autoincrement())
+  id                Int           @id(map: "PK__Historia__3213E83FA1B2466F") @default(autoincrement())
   idEntidad         Int
   puntajeScore      Int
-  nivelRiesgo       String    @db.NVarChar(20)
-  factoresPositivos String?   @db.NVarChar(Max)
-  factoresNegativos String?   @db.NVarChar(Max)
+  nivelRiesgo       String        @db.NVarChar(20)
+  factoresPositivos String?       @db.NVarChar(Max)
+  factoresNegativos String?       @db.NVarChar(Max)
   fechaCalculo      DateTime?
-  Entidad           Entidad   @relation(fields: [idEntidad], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "FK_HistorialScore_Entidad")
+  Entidad           Entidad       @relation(fields: [idEntidad], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "FK_HistorialScore_Entidad")
   Reclamacion       Reclamacion[]
 }
 
 model LogConsultaTerceros {
-  id                     Int                     @id(map: "PK__LogConsu__3213E83F69170A51") @default(autoincrement())
+  id                     Int                     @id(map: "PK__LogConsu__3213E83FD8C2CFB1") @default(autoincrement())
   idConsentimiento       Int?
   idEntidadTitular       Int
   idEntidadConsultante   Int
@@ -93,7 +93,7 @@ model LogConsultaTerceros {
 }
 
 model Notificacion {
-  id               Int       @id(map: "PK__Notifica__3213E83F57310E3C") @default(autoincrement())
+  id               Int       @id(map: "PK__Notifica__3213E83FEAA07814") @default(autoincrement())
   tipoNotificacion String    @db.NVarChar(50)
   idUsuario        Int
   titulo           String    @db.NVarChar(200)
@@ -104,14 +104,14 @@ model Notificacion {
 }
 
 model PlanSuscripcion {
-  id                    Int       @id(map: "PK__PlanSusc__3213E83F16AF48DB") @default(autoincrement())
-  tipoPlan              String    @unique(map: "UQ__PlanSusc__A7343DADD6253231") @db.NVarChar(30)
+  id                    Int       @id(map: "PK__PlanSusc__3213E83F03068E02") @default(autoincrement())
+  tipoPlan              String    @unique(map: "UQ__PlanSusc__A7343DADF4536384") @db.NVarChar(30)
   maxConsultasMensuales Int
   Entidad               Entidad[]
 }
 
 model Recomendacion {
-  id                Int       @id(map: "PK__Recomend__3213E83FE17D761B") @default(autoincrement())
+  id                Int       @id(map: "PK__Recomend__3213E83F1D87B6D2") @default(autoincrement())
   idUsuario         Int
   tipoRecomendacion String    @db.NVarChar(50)
   titulo            String    @db.NVarChar(200)
@@ -124,9 +124,9 @@ model Recomendacion {
 }
 
 model RefreshToken {
-  id             Int       @id(map: "PK__RefreshT__3213E83F176E3DF5") @default(autoincrement())
+  id             Int       @id(map: "PK__RefreshT__3213E83F6A5E60EE") @default(autoincrement())
   idUsuario      Int
-  tokenHash      String    @unique(map: "UQ__RefreshT__9015C60EE113B627") @db.NVarChar(64)
+  tokenHash      String    @unique(map: "UQ__RefreshT__9015C60E10D51CB0") @db.NVarChar(64)
   horaCreacion   DateTime?
   horaExpiracion DateTime
   revocado       Boolean?
@@ -135,45 +135,43 @@ model RefreshToken {
 }
 
 model Rol {
-  id        Int       @id(map: "PK__Rol__3213E83F5C99A606") @default(autoincrement())
-  nombreRol String    @unique(map: "UQ__Rol__2787B00C4C77D760") @db.NVarChar(30)
+  id        Int       @id(map: "PK__Rol__3213E83F4ED8870F") @default(autoincrement())
+  nombreRol String    @unique(map: "UQ__Rol__2787B00C165B432A") @db.NVarChar(30)
   Usuario   Usuario[]
 }
 
 model Usuario {
-  id                    Int                   @id(map: "PK__Usuario__3213E83FB56B73CF") @default(autoincrement())
+  id                    Int                   @id(map: "PK__Usuario__3213E83F0BF4AB73") @default(autoincrement())
   idEntidad             Int
   idRol                 Int
   nombre                String                @db.NVarChar(100)
-  correo                String                @unique(map: "UQ__Usuario__2A586E0BA82D4F06") @db.NVarChar(255)
+  correo                String                @unique(map: "UQ__Usuario__2A586E0B474942D7") @db.NVarChar(255)
   contraseniaHash       String                @db.VarChar(255)
   fechaCreacion         DateTime?
   activo                Boolean?
   notificacionesActivas Boolean?
   LogConsultaTerceros   LogConsultaTerceros[]
   Notificacion          Notificacion[]
+  Reclamacion           Reclamacion[]
   Recomendacion         Recomendacion[]
   RefreshToken          RefreshToken[]
-  Reclamacion           Reclamacion[]
   Entidad               Entidad               @relation(fields: [idEntidad], references: [id], onUpdate: NoAction, map: "FK_Usuario_Entidad")
   Rol                   Rol                   @relation(fields: [idRol], references: [id], onUpdate: NoAction, map: "FK_Usuario_Rol")
 }
 
 model Reclamacion {
-  id                Int       @id @default(autoincrement())
-  folio             String    @unique @db.NVarChar(20)
-  idUsuario         Int
-  idEntidad         Int
-  idHistorialScore  Int?
-  evidenciaUrl      String?   @db.NVarChar(500)
-  motivo            String    @db.NVarChar(Max)
-  estado            String    @default("PENDIENTE") @db.NVarChar(30)
-  respuestaAdmin    String?   @db.NVarChar(Max)
-  fechaCreacion     DateTime? @default(now())
-  fechaResolucion   DateTime?
-  
-
-  Usuario           Usuario   @relation(fields: [idUsuario], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Reclamacion_Usuario")
-  Entidad           Entidad   @relation(fields: [idEntidad], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Reclamacion_Entidad")
-  HistorialScore    HistorialScore? @relation(fields: [idHistorialScore], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_Reclamacion_Historial")
+  id               Int             @id(map: "PK__Reclamac__3213E83F32BFE433") @default(autoincrement())
+  folio            String          @unique(map: "UQ__Reclamac__E8F12C9F0CBBF504") @db.NVarChar(20)
+  idUsuario        Int
+  idEntidad        Int
+  idHistorialScore Int?
+  evidenciaUrl     String?         @db.NVarChar(500)
+  motivo           String          @db.NVarChar(Max)
+  estado           String          @db.NVarChar(30)
+  respuestaAdmin   String?         @db.NVarChar(Max)
+  fechaCreacion    DateTime
+  fechaResolucion  DateTime?
+  Entidad          Entidad         @relation(fields: [idEntidad], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Reclamacion_Entidad")
+  HistorialScore   HistorialScore? @relation(fields: [idHistorialScore], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_Reclamacion_Historial")
+  Usuario          Usuario         @relation(fields: [idUsuario], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Reclamacion_Usuario")
 }

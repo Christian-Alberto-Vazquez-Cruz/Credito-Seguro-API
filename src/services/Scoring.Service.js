@@ -1,8 +1,6 @@
 import { prisma } from '../lib/db.js'
 import { CirculoCreditoService } from './CirculoCredito.Service.js'
 
-//Basado en 5 componentes: Historial, Endeudamiento, Antigüedad, Mix Crediticio, Comportamiento
-
 export class ScoringService {
     static PESOS = {
         HISTORIAL_PAGOS: 0.35,        
@@ -21,19 +19,21 @@ export class ScoringService {
         MUY_MALO: { min: 0, max: 399, color: '#DC2626' }
     }
 
-    /**
-     * Calcula el scoring crediticio completo de una entidad
-     * @param {string} rfc - RFC de la entidad a evaluar
-     * @returns {Promise<Object>} Score completo con desglose
-     */
     static async calcularScoring(rfc) {
         try {
+            // Obtener datos de la API de Círculo de Crédito
             const [resumenBuro, detallesObligaciones, pagosPendientes] = await Promise.all([
                 CirculoCreditoService.obtenerResumenBuro(rfc),
                 CirculoCreditoService.obtenerDetallesObligaciones(rfc),
                 CirculoCreditoService.obtenerPagosPendientes(rfc)
             ])
 
+            // Validar que resumenBuro existe
+            if (!resumenBuro) {
+                throw new Error('No se encontró información crediticia para el RFC proporcionado')
+            }
+
+            // Calcular componentes del scoring
             const historialPagos = this._calcularHistorialPagos(resumenBuro)
             const nivelEndeudamiento = this._calcularNivelEndeudamiento(resumenBuro, detallesObligaciones)
             const antiguedadCrediticia = this._calcularAntiguedadCrediticia(resumenBuro)
@@ -91,61 +91,69 @@ export class ScoringService {
                 recomendaciones,
                 fechaCalculo: new Date(),
                 datosBase: {
-                    totalObligaciones: resumenBuro.total_obligaciones,
-                    saldoTotal: resumenBuro.saldo_total_actual,
-                    mesesHistorial: resumenBuro.meses_historial_crediticio
+                    totalObligaciones: resumenBuro.total_obligaciones || 0,
+                    saldoTotal: Number(resumenBuro.saldo_total_actual) || 0,
+                    mesesHistorial: resumenBuro.meses_historial_crediticio || 0
                 }
             }
 
         } catch (error) {
             console.error('Error al calcular scoring:', error)
-            throw new Error('No se pudo calcular el scoring crediticio')
+            throw new Error(`No se pudo calcular el scoring crediticio: ${error.message}`)
         }
     }
 
-     //Evalúa: Atrasos, pagos tardíos, consistencia 
     static _calcularHistorialPagos(resumen) {
         const maxPuntos = 350
         let puntos = maxPuntos
         const factores = { positivos: [], negativos: [] }
 
-        if (resumen.max_dias_atraso === 0) {
+        const maxDiasAtraso = resumen.max_dias_atraso || 0
+        const totalPagosAtrasados = resumen.total_pagos_atrasados || 0
+        const obligacionesVencidas = resumen.obligaciones_vencidas || 0
+        const obligacionesCarteraVencida = resumen.obligaciones_cartera_vencida || 0
+
+        // Evaluar máximo de días de atraso
+        if (maxDiasAtraso === 0) {
             factores.positivos.push('Sin atrasos registrados')
-        } else if (resumen.max_dias_atraso <= 30) {
+        } else if (maxDiasAtraso <= 30) {
             puntos -= 50
-            factores.negativos.push(`Atraso máximo de ${resumen.max_dias_atraso} días`)
-        } else if (resumen.max_dias_atraso <= 60) {
+            factores.negativos.push(`Atraso máximo de ${maxDiasAtraso} días`)
+        } else if (maxDiasAtraso <= 60) {
             puntos -= 100
-            factores.negativos.push(`Atraso significativo de ${resumen.max_dias_atraso} días`)
-        } else if (resumen.max_dias_atraso <= 90) {
+            factores.negativos.push(`Atraso significativo de ${maxDiasAtraso} días`)
+        } else if (maxDiasAtraso <= 90) {
             puntos -= 150
-            factores.negativos.push(`Atraso grave de ${resumen.max_dias_atraso} días`)
+            factores.negativos.push(`Atraso grave de ${maxDiasAtraso} días`)
         } else {
             puntos -= 250
-            factores.negativos.push(`Atraso crítico de ${resumen.max_dias_atraso} días`)
+            factores.negativos.push(`Atraso crítico de ${maxDiasAtraso} días`)
         }
 
-        if (resumen.total_pagos_atrasados === 0) {
+        // Evaluar total de pagos atrasados
+        if (totalPagosAtrasados === 0) {
             factores.positivos.push('Todos los pagos al día')
-        } else if (resumen.total_pagos_atrasados <= 2) {
+        } else if (totalPagosAtrasados <= 2) {
             puntos -= 30
-            factores.negativos.push(`${resumen.total_pagos_atrasados} pagos atrasados`)
-        } else if (resumen.total_pagos_atrasados <= 5) {
+            factores.negativos.push(`${totalPagosAtrasados} pagos atrasados`)
+        } else if (totalPagosAtrasados <= 5) {
             puntos -= 60
-            factores.negativos.push(`${resumen.total_pagos_atrasados} pagos atrasados`)
+            factores.negativos.push(`${totalPagosAtrasados} pagos atrasados`)
         } else {
             puntos -= 100
-            factores.negativos.push(`${resumen.total_pagos_atrasados} pagos atrasados (alto)`)
+            factores.negativos.push(`${totalPagosAtrasados} pagos atrasados (alto)`)
         }
 
-        if (resumen.obligaciones_vencidas > 0) {
-            puntos -= resumen.obligaciones_vencidas * 40
-            factores.negativos.push(`${resumen.obligaciones_vencidas} obligación(es) vencida(s)`)
+        // Evaluar obligaciones vencidas
+        if (obligacionesVencidas > 0) {
+            puntos -= obligacionesVencidas * 40
+            factores.negativos.push(`${obligacionesVencidas} obligación(es) vencida(s)`)
         }
 
-        if (resumen.obligaciones_cartera_vencida > 0) {
-            puntos -= resumen.obligaciones_cartera_vencida * 50
-            factores.negativos.push(`${resumen.obligaciones_cartera_vencida} en cartera vencida`)
+        // Evaluar cartera vencida
+        if (obligacionesCarteraVencida > 0) {
+            puntos -= obligacionesCarteraVencida * 50
+            factores.negativos.push(`${obligacionesCarteraVencida} en cartera vencida`)
         }
 
         return {
@@ -155,56 +163,71 @@ export class ScoringService {
         }
     }
 
-    /**
-     * Nivel de Endeudamiento
-     * Evalúa: Utilización de crédito, saldo total, monto vencido
-     */
     static _calcularNivelEndeudamiento(resumen, detallesObligaciones) {
         const maxPuntos = 300
         let puntos = maxPuntos
         const factores = { positivos: [], negativos: [] }
 
-        const obligacionesConLimite = detallesObligaciones.filter(o => o.limite_credito > 0)
+        // Validar que detallesObligaciones es un array
+        const obligaciones = Array.isArray(detallesObligaciones) ? detallesObligaciones : []
+
+        // Calcular utilización promedio (solo para obligaciones con límite de crédito)
+        const obligacionesConLimite = obligaciones.filter(o => 
+            o.limite_credito !== null && Number(o.limite_credito) > 0
+        )
+
         if (obligacionesConLimite.length > 0) {
             const utilizacionPromedio = obligacionesConLimite.reduce((sum, o) => {
-                return sum + (Number(o.saldo_actual) / Number(o.limite_credito))
+                const saldo = Number(o.saldo_actual) || 0
+                const limite = Number(o.limite_credito) || 1
+                return sum + (saldo / limite)
             }, 0) / obligacionesConLimite.length
 
+            const porcentaje = (utilizacionPromedio * 100).toFixed(0)
+
             if (utilizacionPromedio <= 0.30) {
-                factores.positivos.push('Utilización de crédito baja (≤30%)')
+                factores.positivos.push(`Utilización de crédito baja (${porcentaje}%)`)
             } else if (utilizacionPromedio <= 0.50) {
                 puntos -= 50
-                factores.negativos.push('Utilización de crédito moderada (30-50%)')
+                factores.negativos.push(`Utilización de crédito moderada (${porcentaje}%)`)
             } else if (utilizacionPromedio <= 0.75) {
                 puntos -= 100
-                factores.negativos.push('Utilización de crédito alta (50-75%)')
+                factores.negativos.push(`Utilización de crédito alta (${porcentaje}%)`)
             } else {
                 puntos -= 150
-                factores.negativos.push('Utilización de crédito muy alta (>75%)')
+                factores.negativos.push(`Utilización de crédito muy alta (${porcentaje}%)`)
             }
         }
 
-        const ratioVencido = Number(resumen.monto_total_vencido) / Number(resumen.saldo_total_actual)
-        if (ratioVencido === 0) {
-            factores.positivos.push('Sin montos vencidos')
-        } else if (ratioVencido <= 0.05) {
-            puntos -= 30
-        } else if (ratioVencido <= 0.15) {
-            puntos -= 70
-            factores.negativos.push('Monto vencido moderado (5-15% del saldo)')
-        } else {
-            puntos -= 120
-            factores.negativos.push('Monto vencido alto (>15% del saldo)')
+        // Evaluar ratio de monto vencido
+        const saldoTotal = Number(resumen.saldo_total_actual) || 0
+        const montoVencido = Number(resumen.monto_total_vencido) || 0
+        
+        if (saldoTotal > 0) {
+            const ratioVencido = montoVencido / saldoTotal
+            
+            if (ratioVencido === 0) {
+                factores.positivos.push('Sin montos vencidos')
+            } else if (ratioVencido <= 0.05) {
+                puntos -= 30
+                factores.negativos.push('Monto vencido bajo (<5% del saldo)')
+            } else if (ratioVencido <= 0.15) {
+                puntos -= 70
+                factores.negativos.push('Monto vencido moderado (5-15% del saldo)')
+            } else {
+                puntos -= 120
+                factores.negativos.push('Monto vencido alto (>15% del saldo)')
+            }
         }
 
-        const saldoTotal = Number(resumen.saldo_total_actual)
+        // Evaluar nivel de deuda total
         if (saldoTotal > 1000000) {
             puntos -= 30
-            factores.negativos.push('Nivel de deuda alto (>$1,000,000)')
+            factores.negativos.push(`Nivel de deuda alto (${(saldoTotal / 1000000).toFixed(2)}M)`)
         } else if (saldoTotal > 500000) {
-            factores.positivos.push('Nivel de deuda moderado')
+            factores.positivos.push(`Nivel de deuda moderado (${(saldoTotal / 1000).toFixed(0)}K)`)
         } else if (saldoTotal > 0) {
-            factores.positivos.push('Nivel de deuda bajo')
+            factores.positivos.push(`Nivel de deuda bajo (${(saldoTotal / 1000).toFixed(0)}K)`)
         }
 
         return {
@@ -214,10 +237,6 @@ export class ScoringService {
         }
     }
 
-    /**
-     * Antigüedad Crediticia 
-     * Evalúa: Meses de historial, crédito más antiguo
-     */
     static _calcularAntiguedadCrediticia(resumen) {
         const maxPuntos = 150
         let puntos = 0
@@ -225,16 +244,16 @@ export class ScoringService {
 
         const mesesHistorial = resumen.meses_historial_crediticio || 0
 
-        if (mesesHistorial >= 60) { // 5+ años
+        if (mesesHistorial >= 60) {
             puntos = 150
             factores.positivos.push('Historial crediticio extenso (>5 años)')
-        } else if (mesesHistorial >= 36) { // 3-5 años
+        } else if (mesesHistorial >= 36) {
             puntos = 120
             factores.positivos.push('Historial crediticio sólido (3-5 años)')
-        } else if (mesesHistorial >= 24) { // 2-3 años
+        } else if (mesesHistorial >= 24) {
             puntos = 90
             factores.positivos.push('Historial crediticio moderado (2-3 años)')
-        } else if (mesesHistorial >= 12) { // 1-2 años
+        } else if (mesesHistorial >= 12) {
             puntos = 60
             factores.negativos.push('Historial crediticio limitado (1-2 años)')
         } else if (mesesHistorial > 0) {
@@ -252,16 +271,15 @@ export class ScoringService {
         }
     }
 
-    /**
-     * Mix Crediticio
-     * Evalúa: Diversificación de tipos de crédito
-     */
     static _calcularMixCrediticio(detallesObligaciones) {
         const maxPuntos = 100
         let puntos = 0
         const factores = { positivos: [], negativos: [] }
 
-        const tiposCredito = new Set(detallesObligaciones.map(o => o.tipo_credito))
+        // Validar que detallesObligaciones es un array
+        const obligaciones = Array.isArray(detallesObligaciones) ? detallesObligaciones : []
+
+        const tiposCredito = new Set(obligaciones.map(o => o.tipo_credito))
         const numTipos = tiposCredito.size
 
         if (numTipos >= 4) {
@@ -281,10 +299,15 @@ export class ScoringService {
             factores.negativos.push('Sin diversificación de créditos')
         }
 
-        if (detallesObligaciones.obligaciones_cerradas > 0) {
-            const bonus = Math.min(25, detallesObligaciones.obligaciones_cerradas * 5)
+        // Contar obligaciones cerradas exitosamente
+        const obligacionesCerradas = obligaciones.filter(o => 
+            o.estatus_credito === 'CERRADO'
+        ).length
+
+        if (obligacionesCerradas > 0) {
+            const bonus = Math.min(25, obligacionesCerradas * 5)
             puntos = Math.min(maxPuntos, puntos + bonus)
-            factores.positivos.push(`${detallesObligaciones.obligaciones_cerradas} crédito(s) cerrado(s) exitosamente`)
+            factores.positivos.push(`${obligacionesCerradas} crédito(s) cerrado(s) exitosamente`)
         }
 
         return {
@@ -295,16 +318,19 @@ export class ScoringService {
         }
     }
 
-    /**
-     * Comportamiento Reciente
-     * Evalúa: Obligaciones nuevas, pagos pendientes
-     */
     static _calcularComportamientoReciente(resumen, pagosPendientes) {
         const maxPuntos = 100
         let puntos = maxPuntos
         const factores = { positivos: [], negativos: [] }
 
-        const pagosMuyAtrasados = pagosPendientes.filter(p => p.dias_atraso_calculado > 30)
+        // Validar que pagosPendientes es un array
+        const pagos = Array.isArray(pagosPendientes) ? pagosPendientes : []
+
+        // Evaluar pagos muy atrasados
+        const pagosMuyAtrasados = pagos.filter(p => 
+            (p.dias_atraso_calculado || 0) > 30
+        )
+
         if (pagosMuyAtrasados.length === 0) {
             factores.positivos.push('Sin pagos pendientes atrasados')
         } else if (pagosMuyAtrasados.length <= 2) {
@@ -315,12 +341,18 @@ export class ScoringService {
             factores.negativos.push(`${pagosMuyAtrasados.length} pagos muy atrasados (crítico)`)
         }
 
-        if (resumen.obligaciones_reestructuradas > 0) {
-            puntos -= resumen.obligaciones_reestructuradas * 20
-            factores.negativos.push(`${resumen.obligaciones_reestructuradas} obligación(es) reestructurada(s)`)
+        // Evaluar obligaciones reestructuradas
+        const obligacionesReestructuradas = resumen.obligaciones_reestructuradas || 0
+        if (obligacionesReestructuradas > 0) {
+            puntos -= obligacionesReestructuradas * 20
+            factores.negativos.push(`${obligacionesReestructuradas} obligación(es) reestructurada(s)`)
         }
 
-        const ratioVigentes = resumen.obligaciones_vigentes / (resumen.total_obligaciones || 1)
+        // Evaluar ratio de obligaciones vigentes
+        const obligacionesVigentes = resumen.obligaciones_vigentes || 0
+        const totalObligaciones = resumen.total_obligaciones || 1
+        const ratioVigentes = obligacionesVigentes / totalObligaciones
+
         if (ratioVigentes >= 0.8) {
             factores.positivos.push('Mayoría de obligaciones vigentes y saludables')
         }
@@ -331,7 +363,6 @@ export class ScoringService {
             ...factores
         }
     }
-
 
     static _determinarNivelRiesgo(scoreTotal) {
         for (const [nivel, rango] of Object.entries(this.NIVELES_RIESGO)) {
@@ -352,7 +383,6 @@ export class ScoringService {
         }
     }
 
-
     static _obtenerDescripcionNivel(nivel) {
         const descripciones = {
             EXCELENTE: 'Riesgo crediticio mínimo - Excelente perfil',
@@ -364,7 +394,6 @@ export class ScoringService {
         }
         return descripciones[nivel] || 'Nivel de riesgo no determinado'
     }
-
 
     static _generarRecomendaciones(analisis) {
         const recomendaciones = []
@@ -422,7 +451,6 @@ export class ScoringService {
         return recomendaciones
     }
 
-
     static _consolidarFactoresPositivos(componentes) {
         const factores = []
         Object.values(componentes).forEach(componente => {
@@ -442,7 +470,6 @@ export class ScoringService {
         })
         return factores
     }
-
 
     static async guardarEnHistorial(idEntidad, scoring) {
         return await prisma.historialScore.create({

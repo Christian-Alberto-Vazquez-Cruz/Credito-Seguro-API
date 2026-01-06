@@ -25,7 +25,7 @@ export class ConsentimientoConsultaController {
             const resultadoValidacion = crearConsentimientoConsultaSchema.safeParse(req.body)
 
             if (!resultadoValidacion.success) {
-                manejarErrorZod(res, resultadoValidacion)
+                return manejarErrorZod(res, resultadoValidacion)
             }
 
             const datos = resultadoValidacion.data
@@ -107,7 +107,7 @@ export class ConsentimientoConsultaController {
             const resultadoValidacion = consultarConsentimientoConsultaSchema.safeParse(req.params)
 
             if (!resultadoValidacion.success) {
-                manejarErrorZod(res, resultadoValidacion)
+                return manejarErrorZod(res, resultadoValidacion)
             }
 
             const { id } = resultadoValidacion.data
@@ -207,7 +207,7 @@ export class ConsentimientoConsultaController {
             const resultadoValidacion = revocarConsentimientoConsultaSchema.safeParse(req.body)
 
             if (!resultadoValidacion.success) {
-                manejarErrorZod(res, resultadoValidacion)
+                return manejarErrorZod(res, resultadoValidacion)
             }
 
             const { id } = resultadoValidacion.data
@@ -259,7 +259,7 @@ export class ConsentimientoConsultaController {
             const resultadoValidacion = verificarConsentimientoConsultaSchema.safeParse(req.body)
 
             if (!resultadoValidacion.success) {
-                responderConError(res, resultadoValidacion)
+                return manejarErrorZod(res, resultadoValidacion)
             }
 
             const { idEntidadTitular, tipoConsulta } = resultadoValidacion.data
@@ -292,7 +292,7 @@ export class ConsentimientoConsultaController {
                 try {
                     await prisma.logConsultaTerceros.create({
                         data: {
-                            idConsentimiento: 0,
+                            idConsentimiento: null,
                             idEntidadTitular: idEntidadTitular,
                             idEntidadConsultante: idEntidadConsultante,
                             idUsuarioOperador: req.usuario.id,

@@ -47,12 +47,6 @@ export class ConsumoService {
             }
         })
 
-        if (consumo) {
-            console.log("Consumo existente:", consumo)
-        } else {
-            console.log("No se ha encontrado el consumo")
-        }
-
         await prisma.consumoEntidad.upsert({
             where: {
                 idEntidad_periodoInicio: {

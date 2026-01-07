@@ -6,6 +6,7 @@ import { validarSoloPropietario } from '../middleware/ValidarSoloPropietario.js'
 
 const router = Router()
 router.post("/", UsuariosController.crearUsuario)
+router.get("/me", validarJWT, UsuariosController.obtenerMiPerfil) 
 router.put("/:id", validarJWT, validarPropietarioOAdmin, UsuariosController.actualizarUsuario)
 router.delete("/:id", validarJWT, validarPropietarioOAdmin, UsuariosController.eliminarUsuario) //soft delete
 router.patch("/:id/notificaciones", validarJWT, validarSoloPropietario,

@@ -1,7 +1,6 @@
 export function validarRFC(schema, rfc, ctx) {
     if (typeof rfc !== 'string' || rfc.trim() === '') {
         ctx.addIssue({
-<<<<<<< HEAD
             code: 'custom',
             path: ['rfc'],
             message: 'El RFC es inválido'
@@ -18,11 +17,6 @@ export function validarRFC(schema, rfc, ctx) {
                 path: ['rfc'],
                 message: issue.message
             })
-=======
-            code: "custom",
-            message: result.error.issues[0].message,
-            path: ['rfc']
->>>>>>> 71cd8119050b1b3b7bc58226758e4e7977cf5b4d
         })
     }
 }

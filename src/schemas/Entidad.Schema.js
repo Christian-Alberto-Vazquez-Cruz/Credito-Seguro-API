@@ -2,6 +2,15 @@ import { z } from '../lib/zod.js'
 import { idNumberSchema, idParamSchema, 
     rfcFisicaSchema, rfcMoralSchema} from './Primitivas.Schema.js'
 
+function validarRFC(schemaRFC, rfc, ctx) {
+  const result = schemaRFC.safeParse(rfc)
+  if (!result.success) {
+    for (const issue of result.error.issues) {
+      ctx.addIssue(issue)
+    }
+  }
+}
+
 export const crearEntidadSchema = z.object({
     tipoEntidad: z.enum(['FISICA', 'MORAL'], {
         errorMap: () => ({ message: "El tipo de entidad debe ser FISICA o MORAL" })

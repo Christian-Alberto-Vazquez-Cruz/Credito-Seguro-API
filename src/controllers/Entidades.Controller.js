@@ -193,4 +193,93 @@ export class EntidadesController {
             return responderConError(res, 500, MENSAJE_ERROR_GENERICO)
         }
     }
+
+        static async listarEntidades(req, res) {
+    try {
+        const { activo, tipoEntidad } = req.query
+
+        const where = {}
+        if (activo === 'true') where.activo = true
+        if (activo === 'false') where.activo = false
+        if (tipoEntidad) where.tipoEntidad = tipoEntidad
+
+        const entidades = await prisma.entidad.findMany({
+        where,
+        orderBy: { fechaAlta: 'desc' },
+        select: {
+            id: true,
+            nombreLegal: true,
+            rfc: true,
+            tipoEntidad: true,
+            activo: true,
+            fechaAlta: true,
+            PlanSuscripcion: {
+            select: {
+                tipoPlan: true,
+                maxConsultasMensuales: true
+            }
+            },
+            _count: {
+            select: { Usuario: true }
+            }
+        }
+        })
+
+        return responderConExito(res, 200, 'Entidades obtenidas', {
+        total: entidades.length,
+        entidades: entidades.map(e => ({
+            id: e.id,
+            nombreLegal: e.nombreLegal,
+            rfc: e.rfc,
+            tipoEntidad: e.tipoEntidad,
+            activo: e.activo,
+            fechaAlta: e.fechaAlta,
+            plan: e.PlanSuscripcion?.tipoPlan,
+            maxConsultasMensuales: e.PlanSuscripcion?.maxConsultasMensuales,
+            totalUsuarios: e._count.Usuario
+        }))
+        })
+        } catch (error) {
+            console.error('Error al listar entidades:', error)
+            return responderConError(res, 500, MENSAJE_ERROR_GENERICO)
+        }
+    }
+
+        static async buscarEntidades(req, res) {
+    try {
+        const { q } = req.query
+
+        if (!q) {
+        return responderConError(res, 400, 'Parámetro q requerido')
+        }
+
+        const entidades = await prisma.entidad.findMany({
+        where: {
+            OR: [
+            { nombreLegal: { contains: q, mode: 'insensitive' } },
+            { rfc: { contains: q, mode: 'insensitive' } }
+            ]
+        },
+        orderBy: { nombreLegal: 'asc' },
+        select: {
+            id: true,
+            nombreLegal: true,
+            rfc: true,
+            tipoEntidad: true,
+            activo: true,
+            fechaAlta: true
+        }
+        })
+
+        return responderConExito(res, 200, 'Resultados de búsqueda', {
+        total: entidades.length,
+        entidades
+        })
+    } catch (error) {
+        console.error('Error al buscar entidades:', error)
+        return responderConError(res, 500, MENSAJE_ERROR_GENERICO)
+    }
+    }
+
+
 }

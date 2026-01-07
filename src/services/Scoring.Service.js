@@ -21,19 +21,16 @@ export class ScoringService {
 
     static async calcularScoring(rfc) {
         try {
-            // Obtener datos de la API de Círculo de Crédito
             const [resumenBuro, detallesObligaciones, pagosPendientes] = await Promise.all([
                 CirculoCreditoService.obtenerResumenBuro(rfc),
                 CirculoCreditoService.obtenerDetallesObligaciones(rfc),
                 CirculoCreditoService.obtenerPagosPendientes(rfc)
             ])
 
-            // Validar que resumenBuro existe
             if (!resumenBuro) {
                 throw new Error('No se encontró información crediticia para el RFC proporcionado')
             }
 
-            // Calcular componentes del scoring
             const historialPagos = this._calcularHistorialPagos(resumenBuro)
             const nivelEndeudamiento = this._calcularNivelEndeudamiento(resumenBuro, detallesObligaciones)
             const antiguedadCrediticia = this._calcularAntiguedadCrediticia(resumenBuro)
@@ -98,7 +95,36 @@ export class ScoringService {
             }
 
         } catch (error) {
-            console.error('Error al calcular scoring:', error)
+            if (error.response?.status === 404 || error.message?.includes('404')) {
+                return {
+                    scoreTotal: 0,
+                    nivelRiesgo: {
+                        nivel: "SIN_HISTORIAL",
+                        descripcion: "Sin historial crediticio registrado",
+                        color: "#6B7280",
+                        rango: "0"
+                    },
+                    componentes: {
+                        historialPagos: { puntos: 0, porcentaje: "0.0", positivos: [], negativos: ["Sin historial de pagos"] },
+                        nivelEndeudamiento: { puntos: 0, porcentaje: "0.0", positivos: [], negativos: ["Sin datos de endeudamiento"] },
+                        antiguedadCrediticia: { puntos: 0, porcentaje: "0.0", positivos: [], negativos: ["Sin antigüedad crediticia"] },
+                        mixCrediticio: { puntos: 0, porcentaje: "0.0", tiposCredito: [], positivos: [], negativos: ["Sin diversificación"] },
+                        comportamientoReciente: { puntos: 0, porcentaje: "0.0", positivos: [], negativos: ["Sin comportamiento reciente"] }
+                    },
+                    factoresPositivos: ["Sin obligaciones pendientes"],
+                    factoresNegativos: ["Sin historial crediticio registrado"],
+                    recomendaciones: [{
+                        prioridad: "ALTA",
+                        categoria: "CONSTRUCCION",
+                        titulo: "Construir historial crediticio",
+                        descripcion: "Considere solicitar un producto crediticio para comenzar a construir su historial",
+                        impacto: "Fundamental para futuras solicitudes"
+                    }],
+                    fechaCalculo: new Date(),
+                    datosBase: { totalObligaciones: 0, saldoTotal: 0, mesesHistorial: 0 },
+                    sinHistorial: true
+                };
+            }
             throw new Error(`No se pudo calcular el scoring crediticio: ${error.message}`)
         }
     }
@@ -113,7 +139,6 @@ export class ScoringService {
         const obligacionesVencidas = resumen.obligaciones_vencidas || 0
         const obligacionesCarteraVencida = resumen.obligaciones_cartera_vencida || 0
 
-        // Evaluar máximo de días de atraso
         if (maxDiasAtraso === 0) {
             factores.positivos.push('Sin atrasos registrados')
         } else if (maxDiasAtraso <= 30) {
@@ -130,7 +155,6 @@ export class ScoringService {
             factores.negativos.push(`Atraso crítico de ${maxDiasAtraso} días`)
         }
 
-        // Evaluar total de pagos atrasados
         if (totalPagosAtrasados === 0) {
             factores.positivos.push('Todos los pagos al día')
         } else if (totalPagosAtrasados <= 2) {
@@ -144,13 +168,11 @@ export class ScoringService {
             factores.negativos.push(`${totalPagosAtrasados} pagos atrasados (alto)`)
         }
 
-        // Evaluar obligaciones vencidas
         if (obligacionesVencidas > 0) {
             puntos -= obligacionesVencidas * 40
             factores.negativos.push(`${obligacionesVencidas} obligación(es) vencida(s)`)
         }
 
-        // Evaluar cartera vencida
         if (obligacionesCarteraVencida > 0) {
             puntos -= obligacionesCarteraVencida * 50
             factores.negativos.push(`${obligacionesCarteraVencida} en cartera vencida`)
@@ -168,10 +190,8 @@ export class ScoringService {
         let puntos = maxPuntos
         const factores = { positivos: [], negativos: [] }
 
-        // Validar que detallesObligaciones es un array
         const obligaciones = Array.isArray(detallesObligaciones) ? detallesObligaciones : []
 
-        // Calcular utilización promedio (solo para obligaciones con límite de crédito)
         const obligacionesConLimite = obligaciones.filter(o => 
             o.limite_credito !== null && Number(o.limite_credito) > 0
         )
@@ -199,7 +219,6 @@ export class ScoringService {
             }
         }
 
-        // Evaluar ratio de monto vencido
         const saldoTotal = Number(resumen.saldo_total_actual) || 0
         const montoVencido = Number(resumen.monto_total_vencido) || 0
         
@@ -220,7 +239,6 @@ export class ScoringService {
             }
         }
 
-        // Evaluar nivel de deuda total
         if (saldoTotal > 1000000) {
             puntos -= 30
             factores.negativos.push(`Nivel de deuda alto (${(saldoTotal / 1000000).toFixed(2)}M)`)
@@ -276,7 +294,6 @@ export class ScoringService {
         let puntos = 0
         const factores = { positivos: [], negativos: [] }
 
-        // Validar que detallesObligaciones es un array
         const obligaciones = Array.isArray(detallesObligaciones) ? detallesObligaciones : []
 
         const tiposCredito = new Set(obligaciones.map(o => o.tipo_credito))
@@ -299,7 +316,6 @@ export class ScoringService {
             factores.negativos.push('Sin diversificación de créditos')
         }
 
-        // Contar obligaciones cerradas exitosamente
         const obligacionesCerradas = obligaciones.filter(o => 
             o.estatus_credito === 'CERRADO'
         ).length
@@ -323,10 +339,8 @@ export class ScoringService {
         let puntos = maxPuntos
         const factores = { positivos: [], negativos: [] }
 
-        // Validar que pagosPendientes es un array
         const pagos = Array.isArray(pagosPendientes) ? pagosPendientes : []
 
-        // Evaluar pagos muy atrasados
         const pagosMuyAtrasados = pagos.filter(p => 
             (p.dias_atraso_calculado || 0) > 30
         )
@@ -341,14 +355,12 @@ export class ScoringService {
             factores.negativos.push(`${pagosMuyAtrasados.length} pagos muy atrasados (crítico)`)
         }
 
-        // Evaluar obligaciones reestructuradas
         const obligacionesReestructuradas = resumen.obligaciones_reestructuradas || 0
         if (obligacionesReestructuradas > 0) {
             puntos -= obligacionesReestructuradas * 20
             factores.negativos.push(`${obligacionesReestructuradas} obligación(es) reestructurada(s)`)
         }
 
-        // Evaluar ratio de obligaciones vigentes
         const obligacionesVigentes = resumen.obligaciones_vigentes || 0
         const totalObligaciones = resumen.total_obligaciones || 1
         const ratioVigentes = obligacionesVigentes / totalObligaciones

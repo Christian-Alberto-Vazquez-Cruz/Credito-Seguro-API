@@ -23,8 +23,19 @@ export class CirculoCreditoService {
   }
 
   static async obtenerDetallesObligaciones(rfc) {
-    const { data } = await api.get(`/obligaciones/${rfc}/detalles`)
-    return data
+    try {
+      const { data } = await api.get(`/obligaciones/${rfc}/detalles`);
+      return data;
+    } catch (error) {
+      if (error.response?.status === 404) {
+        return {
+          error: false,
+          mensaje: 'Sin obligaciones registradas',
+          datos: []
+        };
+      }
+      throw error;
+    }
   }
 
   static async obtenerPagos(rfc) {
@@ -32,10 +43,17 @@ export class CirculoCreditoService {
     return data
   }
 
-  static async obtenerPagosPendientes(rfc) {
-    const { data } = await api.get(`/pagos/pendientes/${rfc}`)
-    return data
-  }
+static async obtenerPagosPendientes(rfc) {
+    try {
+        const { data } = await api.get(`/pagos/${rfc}/pendientes`);
+        return data;
+    } catch (error) {
+        if (error.response?.status === 404) {
+            return { error: false, mensaje: 'Sin pagos pendientes', datos: [] };
+        }
+        throw error;
+    }
+}
 
   static async obtenerEstadisticasPago(rfc){
     const { data } = await api.get(`/pagos/estadisticas/${rfc}`)

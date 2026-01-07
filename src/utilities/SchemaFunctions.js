@@ -3,7 +3,7 @@ export function validarRFC(schema, rfc, ctx) {
     if (!result.success) {
         ctx.addIssue({
             code: "custom",
-            message: result.error.errors[0].message,
+            message: result.error.issues[0].message,
             path: ['rfc']
         })
     }

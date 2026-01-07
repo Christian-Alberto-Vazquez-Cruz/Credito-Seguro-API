@@ -9,6 +9,7 @@ import consentimientosRouter from "./routes/Consentimientos.Routes.js"
 import consentimientosConsultaRouter from "./routes/ConsentiminetosConsulta.Routes.js"
 import consultasHistorialRouter from "./routes/HistorialCrediticio.Routes.js"
 import scoresRouter from "./routes/Score.Routes.js"
+import { rutaNoEncontrada } from './middleware/RutaNoEncontrada.js'
 
 const app = express()
 app.use(cors());
@@ -32,6 +33,8 @@ app.use("/scores", scoresRouter)
 // app.use("/recomendaciones", recomedacionesRouter)
 // app.use("/planes", planesRouter)
 // app.use("/consumo")
+
+app.use(rutaNoEncontrada)
 
 app.listen(env.PORT, () => {
   console.log(`Escuchando en el puerto: ${env.PORT}`)

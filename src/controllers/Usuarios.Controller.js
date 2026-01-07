@@ -123,7 +123,7 @@ export class UsuariosController {
                 }
                 
                 if (!entidadExistente.activo) {
-                    return responderConError(res, 400, 'La entidad especificada está inactiva')
+                  return responderConError(res, 400, 'La entidad especificada está inactiva')
                 }
                 
                 const contraseniaHash = await hashearContraseñaBCrypt(datos.contraseña)
